@@ -1,0 +1,85 @@
+/* Onboarding 페이지 */
+.onboarding-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 로고 */
+.logo-wrapper {
+    animation: fadeInUp 1s ease-out;
+}
+
+.logo-image {
+    width: 200px;
+    height: auto;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+}
+
+/* 로딩 인디케이터 */
+.loading-indicator {
+    display: flex;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.loading-dot {
+    width: 12px;
+    height: 12px;
+    background: #A3E635;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.loading-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* 로딩 텍스트 */
+.loading-text {
+    margin-top: 20px;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* 애니메이션 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
