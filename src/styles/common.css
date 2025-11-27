@@ -1,0 +1,271 @@
+/* ===================================
+   공통 스타일 (모든 페이지 적용)
+   =================================== */
+
+/* 전역 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* 전역 배경 */
+body {
+    background: #7C3AED;
+    color: white;
+}
+
+/* 버튼 기본 스타일 리셋 */
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* 링크 기본 스타일 */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ===== 헤더 ===== */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 105px;
+    background: #3A1C6E;
+    z-index: 100;
+    margin: 0;
+    padding: 0;
+}
+
+.header-inner {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+/* 로고 */
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-circle {
+    width: 70px;
+    height: 70px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.logo-image {
+    width: 59px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* 헤더 액션 버튼들 */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-signup {
+    width: 149px;
+    height: 46px;
+    background: black;
+    color: white;
+    border-radius: 50px;
+    font-family: 'Gmarket Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-signup:hover {
+    background: #1a1a1a;
+    transform: translateY(-2px);
+}
+
+.btn-login {
+    width: 122px;
+    height: 46px;
+    background: white;
+    color: black;
+    border-radius: 50px;
+    font-family: 'Gmarket Sans', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-login:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+/* 메뉴 버튼 */
+.btn-menu {
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    cursor: pointer;
+    margin-left: 20px;
+    border: none;
+}
+
+.menu-line {
+    width: 32px;
+    height: 4px;
+    background: white;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.btn-menu:hover .menu-line {
+    background: #A3E635;
+}
+
+/* ===== 메인 컨텐츠 ===== */
+.main-content {
+    padding-top: 105px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-left: 49px;
+    padding-right: 49px;
+}
+
+/* ===== 사이드 메뉴 ===== */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    pointer-events: none;
+}
+
+.side-menu.active {
+    pointer-events: auto;
+}
+
+.side-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.side-menu.active .side-menu-overlay {
+    opacity: 1;
+}
+
+.side-menu-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 400px;
+    background: #3A1C6E;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.side-menu.active .side-menu-content {
+    transform: translateX(0);
+}
+
+.side-menu-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    border: none;
+}
+
+.side-menu-nav {
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.side-menu-link {
+    color: white;
+    font-family: 'Paperlogy', sans-serif;
+    font-size: 24px;
+    padding: 20px;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.side-menu-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+    .header-inner {
+        padding: 0 20px;
+    }
+    
+    .btn-signup {
+        width: 100px;
+        font-size: 18px;
+    }
+    
+    .btn-login {
+        width: 90px;
+        font-size: 18px;
+    }
+    
+    .main-content {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .side-menu-content {
+        width: 300px;
+    }
+}

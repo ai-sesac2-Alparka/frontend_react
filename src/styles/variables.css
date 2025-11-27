@@ -1,0 +1,199 @@
+/* ===================================
+   ?îÏûê???†ÌÅ∞ (Î≥Ä?? + ?∞Ìä∏ ?±Î°ù
+   =================================== */
+
+/* ===== ?∞Ìä∏ ?±Î°ù ===== */
+
+/* 1. HS?∞ÌÜ†??- ???úÎ™©??*/
+@font-face {
+    font-family: 'HS?∞ÌÜ†??;
+    src: url('/fonts/HSSanTokki2.0(2024).ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* 2. Paperlogy - Î©îÏù∏ ?çÏä§?∏Ïö© (?¨Îü¨ ÍµµÍ∏∞) */
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-1Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-2ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-3Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-4Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-5Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-6SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-7Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-8ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('/fonts/Paperlogy-9Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* 3. PyeongChang Peace - ?πÎ≥Ñ ?úÎ™©??*/
+@font-face {
+    font-family: 'PyeongChang Peace';
+    src: url('/fonts/PyeongChangPeace-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PyeongChang Peace';
+    src: url('/fonts/PyeongChangPeace-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* 4. Cafe24 PRO UP - Î°úÍ≥†??*/
+@font-face {
+    font-family: 'Cafe24 PRO UP';
+    src: url('/fonts/Cafe24PROUP.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ‚≠?5. Gmarket Sans - Î≤ÑÌäº??*/
+@font-face {
+    font-family: 'Gmarket Sans';
+    src: url('/fonts/GmarketSansTTFLight.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gmarket Sans';
+    src: url('/fonts/GmarketSansTTFMedium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gmarket Sans';
+    src: url('/fonts/GmarketSansTTFBold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* CSS Î≥Ä??*/
+:root {
+    /* ===== ?∞Ìä∏ Î≥Ä??===== */
+    --font-title: 'HS?∞ÌÜ†??, sans-serif;
+    --font-body: 'Paperlogy', 'Noto Sans KR', sans-serif;
+    --font-special: 'PyeongChang Peace', sans-serif;
+    --font-logo: 'Cafe24 PRO UP', sans-serif;
+    --font-button: 'Gmarket Sans', sans-serif;  /* ‚≠?Ï∂îÍ? */
+    
+    /* ===== ?âÏÉÅ Î≥Ä??===== */
+    --primary: #7C3AED;
+    --primary-dark: #6D28D9;
+    --primary-light: #A78BFA;
+    
+    --secondary: #EC4899;
+    --accent: #10B981;
+    --accent-lime: #A3E635;
+    
+    /* Grayscale */
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --gray-800: #1F2937;
+    --gray-900: #111827;
+    
+    /* Alpaca Colors */
+    --alpaca-light: #FFE5B4;
+    --alpaca-dark: #DEB887;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    
+    /* Transitions */
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 250ms ease-in-out;
+    --transition-slow: 350ms ease-in-out;
+}
+

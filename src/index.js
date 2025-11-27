@@ -1,5 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './styles/reset.css';        // ⭐ 추가
+import './styles/variables.css';    // ⭐ 추가
+import './styles/common.css';       // ⭐ 추가
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
