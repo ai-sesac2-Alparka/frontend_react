@@ -5,6 +5,7 @@ import './App.css';
 // Pages
 import Onboarding from './pages/Onboarding/Onboarding';
 import HomeCreation from './pages/HomeCreation/HomeCreation';  // ⭐ 추가
+import ElementArcade from './pages/Arcade/Arcade';
 
 function App() {
   return (
@@ -31,20 +32,8 @@ function App() {
           </div>
         } />
         
-        {/* 아케이드 페이지 (임시) */}
-        <Route path="/arcade" element={
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '100vh',
-            background: '#7C3AED',
-            color: 'white',
-            fontSize: '24px'
-          }}>
-            <h1>🕹️ 아케이드 페이지 (준비 중)</h1>
-          </div>
-        } />
+  {/* 아케이드 페이지 */}
+  <Route path="/arcade" element={<ElementArcade />} />
         
         {/* 커스터마이즈 페이지 (임시) */}
         <Route path="/customize" element={

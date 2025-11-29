@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../../components/Header/Header';
 import './HomeCreation.css';
 
 function HomeCreation() {
@@ -38,23 +39,16 @@ function HomeCreation() {
         navigate(`/customize?genre=${selectedGenre}&mood=${selectedMood}`);
     };
 
+    // 완성된 주문서 텍스트 계산 (둘 다 비어있으면 빈 문자열)
+    const orderText = (() => {
+        const parts = [selectedMood, selectedGenre].filter(Boolean).join(' ').trim();
+        return parts ? `${parts} 게임` : '';
+    })();
+
     return (
         <div className="home-creation-page">
-            {/* 헤더 */}
-            <header className="header">
-                <div className="header-inner">
-                    <div className="logo" onClick={() => navigate('/home')}>
-                        <img src="/images/alpaca.png" alt="AIparkA" className="logo-image" />
-                    </div>
-                    
-                    <div className="header-actions">
-                        <button className="btn-signup">회원가입</button>
-                        <button className="btn-login">로그인</button>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
-            {/* 메인 콘텐츠 */}
             <main className="main-content">
                 {/* 히어로 섹션 */}
                 <section className="hero-section">
@@ -140,11 +134,9 @@ function HomeCreation() {
                         <div className="creator-footer">
                             <div className="order-summary">
                                 <p className="order-label">완성된 주문서</p>
-                                <p className="order-text">
-                                    "{selectedMood} {selectedGenre} 게임"
-                                </p>
+                                <p className="order-text">{orderText}</p>
                             </div>
-                            
+
                             <button className="btn-create" onClick={handleCreate}>
                                 CREATE!
                             </button>

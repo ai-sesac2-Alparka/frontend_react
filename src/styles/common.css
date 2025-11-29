@@ -9,6 +9,64 @@
     box-sizing: border-box;
 }
 
+/* ===== 폰트 선언 (public/fonts) ===== */
+@font-face {
+    font-family: 'Gmarket Sans TTF';
+    src: url('../../public/fonts/GmarketSansTTFBold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'HSSanTokki2';
+    src: url('../../public/fonts/HSSanTokki2.0(2024).ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Paperlogy-5';
+    src: url('../../public/fonts/Paperlogy-5Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Paperlogy-6';
+    src: url('../../public/fonts/Paperlogy-6SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Paperlogy-7';
+    src: url('../../public/fonts/Paperlogy-7Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Paperlogy-4';
+    src: url('../../public/fonts/Paperlogy-4Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'PyeongChangPeace-Light';
+    src: url('../../public/fonts/PyeongChangPeace-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'PyeongChangPeace-Bold';
+    src: url('../../public/fonts/PyeongChangPeace-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -96,7 +154,7 @@ a {
     background: black;
     color: white;
     border-radius: 50px;
-    font-family: 'Gmarket Sans', sans-serif;
+    font-family: 'Gmarket Sans TTF', 'Gmarket Sans', sans-serif;
     font-size: 24px;
     font-weight: 700;
     cursor: pointer;
@@ -115,7 +173,7 @@ a {
     background: white;
     color: black;
     border-radius: 50px;
-    font-family: 'Gmarket Sans', sans-serif;
+    font-family: 'Gmarket Sans TTF', 'Gmarket Sans', sans-serif;
     font-size: 24px;
     font-weight: 700;
     cursor: pointer;
