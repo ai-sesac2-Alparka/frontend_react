@@ -36,7 +36,11 @@ function HomeCreation() {
         }
 
         // Customize 페이지로 이동
-        navigate(`/customize?genre=${selectedGenre}&mood=${selectedMood}`);
+        navigate('/customize/step1', {
+            state: {
+                order: `${selectedMood} ${selectedGenre} 게임`,
+            },
+        });
     };
 
     // 완성된 주문서 텍스트 계산 (둘 다 비어있으면 빈 문자열)

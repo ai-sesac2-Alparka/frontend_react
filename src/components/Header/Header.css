@@ -1,7 +1,8 @@
 /* components/Header/Header.css */
+
 .header {
     width: 100%;
-    height: 80px;
+    height: var(--header-height, 60px); /* fallback height 추가 */
     background: #3A1C6E;
     position: fixed;
     top: 0;
@@ -33,6 +34,7 @@
 .header-actions {
     display: flex;
     gap: 16px;
+    align-items: center; /* 버튼들의 수직 중앙 정렬 보장 */
 }
 
 .btn-create-header {
@@ -45,6 +47,7 @@
     font-weight: 700;
     cursor: pointer;
     border: 2px solid rgba(255,255,255,0.12);
+    transition: all 0.3s ease; /* 부드러운 전환 효과 추가 */
 }
 
 .btn-arcade-header {
@@ -57,6 +60,7 @@
     font-weight: 700;
     cursor: pointer;
     border: 2px solid rgba(255,255,255,0.12);
+    transition: all 0.3s ease; /* 부드러운 전환 효과 추가 */
 }
 
 .btn-signup,
@@ -73,15 +77,45 @@
     transition: all 0.3s ease;
 }
 
+/* hover 효과들 */
+.btn-create-header:hover,
+.btn-arcade-header:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .btn-signup:hover,
 .btn-login:hover {
     background: #f0f0f0;
     transform: translateY(-2px);
 }
 
+/* 활성화 상태 (만들기/아케이드 버튼) */
 .btn-create-header.active,
 .btn-arcade-header.active {
     background: #A3E635;
     color: black;
     border-color: transparent;
+}
+
+/* ⭐ 추가: 마이페이지 버튼 스타일 */
+.mypage-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* 완전한 원형 */
+    background: #ffffff;
+    color: #3A1C6E;
+    border: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px; /* 아이콘(이모지) 크기 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0; /* 패딩 초기화 */
+}
+
+.mypage-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
