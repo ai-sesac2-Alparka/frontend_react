@@ -159,7 +159,9 @@ const GameStudio = () => {
                 isMuted={isMuted}
                 onToggleMute={() => setIsMuted((m) => !m)}
                 onCopyLink={handleCopyLink}
-                onFullscreen={() => { /* can be used for additional tracking */ }}
+                onFullscreen={() => {
+                  /* can be used for additional tracking */
+                }}
               />
             )}
             {activeTab === "assets" && (

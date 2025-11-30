@@ -2,7 +2,15 @@ import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./GameRunner.css";
 
-const GameRunner = ({ iframeSrc, isMuted, onToggleMute, onCopyLink, onFullscreen, reloadToken = 0, onErrorBatch = null }) => {
+const GameRunner = ({
+  iframeSrc,
+  isMuted,
+  onToggleMute,
+  onCopyLink,
+  onFullscreen,
+  reloadToken = 0,
+  onErrorBatch = null,
+}) => {
   const gameFrameRef = useRef(null);
   const [loadError, setLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,7 +116,11 @@ const GameRunner = ({ iframeSrc, isMuted, onToggleMute, onCopyLink, onFullscreen
           <button className="tool-btn" title="링크 복사" onClick={handleCopy}>
             🔗
           </button>
-          <button className="tool-btn" title="전체 화면" onClick={handleFullscreen}>
+          <button
+            className="tool-btn"
+            title="전체 화면"
+            onClick={handleFullscreen}
+          >
             ⛶
           </button>
         </div>
