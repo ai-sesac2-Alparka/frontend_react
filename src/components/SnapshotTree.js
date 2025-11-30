@@ -1,10 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import "./SnapshotTree.css";
-import {
-  restoreGameVersion,
-  getSnapshotLog,
-  getGameData,
-} from "../api/backend";
+import { useSnapshotTree } from "../hooks/useSnapshotTree";
 
 // 기본 스냅샷 데이터 (사용자가 제공한 예시)
 const DEFAULT_SNAPSHOTS = {
@@ -121,12 +117,15 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
 export default function SnapshotTree({
   data = DEFAULT_SNAPSHOTS,
   gameName,
-  onSnapshotUpdate,
   showImportExport = true,
-  onGameDataUpdate,
 }) {
+  // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
+  const { versions: hookVersions, restoreAndRefresh: restoreSnapshot, fetchSnapshots } = useSnapshotTree(gameName);
+
   const [customData, setCustomData] = useState(null);
-  const [versions, setVersions] = useState(data?.versions || []);
+  
+  // Hook의 versions 또는 customData 사용
+  const versions = customData?.versions || hookVersions;
   const [selected, setSelected] = useState(null); // 선택된 버전 오브젝트
   const [isApplying, setIsApplying] = useState(false);
   const fileRef = useRef(null);
@@ -145,13 +144,12 @@ export default function SnapshotTree({
     scaleRef.current = scale;
   }, [scale]);
 
-  // 외부 data prop이 변경되면, 사용자 업로드(customData)가 없는 경우에만 동기화
+  // 컴포넌트 마운트 시 스냅샷 로드
   useEffect(() => {
-    if (!customData) {
-      setVersions(data?.versions || []);
-      setSelected(null);
+    if (gameName && !customData) {
+      fetchSnapshots();
     }
-  }, [data, customData]);
+  }, [gameName, customData, fetchSnapshots]);
 
   // 외부 data 혹은 업로드 데이터 변화에 따라 versions 상태 갱신
   const effectiveData = useMemo(
@@ -210,7 +208,6 @@ export default function SnapshotTree({
 
   const zoomIn = () => zoomByFactor(1.1);
   const zoomOut = () => zoomByFactor(0.9);
-  
 
   // 초기 확대 비율: 콘텐츠가 래퍼보다 크면 최소 배율로 시작, 아니면 1로 시작
   useEffect(() => {
@@ -302,7 +299,7 @@ export default function SnapshotTree({
       wrapEl.addEventListener("pointerleave", leave);
     }
 
-  // (no-op here; helpers live in component scope)
+    // (no-op here; helpers live in component scope)
 
     // Handler attached directly to the wrap element (non-passive) to try to prevent browser zoom
     const wrapWheelHandler = (e) => {
@@ -332,14 +329,22 @@ export default function SnapshotTree({
       // non-passive so we can call preventDefault
       wrapEl.addEventListener("wheel", wrapWheelHandler, { passive: false });
     }
-    document.addEventListener("wheel", captureHandler, { passive: false, capture: true });
-    window.addEventListener("wheel", captureHandler, { passive: false, capture: true });
+    document.addEventListener("wheel", captureHandler, {
+      passive: false,
+      capture: true,
+    });
+    window.addEventListener("wheel", captureHandler, {
+      passive: false,
+      capture: true,
+    });
 
     return () => {
       if (wrapEl) {
         wrapEl.removeEventListener("pointerenter", enter);
         wrapEl.removeEventListener("pointerleave", leave);
-        wrapEl.removeEventListener("wheel", wrapWheelHandler, { passive: false });
+        wrapEl.removeEventListener("wheel", wrapWheelHandler, {
+          passive: false,
+        });
       }
       document.removeEventListener("wheel", captureHandler, { capture: true });
       window.removeEventListener("wheel", captureHandler, { capture: true });
@@ -398,7 +403,6 @@ export default function SnapshotTree({
         const json = JSON.parse(ev.target.result);
         if (json?.versions && Array.isArray(json.versions)) {
           setCustomData(json);
-          setVersions(json.versions);
         } else {
           alert("올바른 형식이 아닙니다. { versions: [...] } 필요");
         }
@@ -468,7 +472,7 @@ export default function SnapshotTree({
           <button onClick={() => zoomOut()} title="Zoom Out">
             −
           </button>
-          
+
           <button
             onClick={() => setCtrlZoomEnabled((v) => !v)}
             title="Toggle Ctrl Zoom Mode"
@@ -488,8 +492,8 @@ export default function SnapshotTree({
               <button
                 onClick={() => {
                   setCustomData(null);
-                  setVersions(data?.versions || []);
                   setSelected(null);
+                  fetchSnapshots();
                 }}
               >
                 기본 데이터로 복원
@@ -604,49 +608,16 @@ export default function SnapshotTree({
                   if (!selected) return;
                   setIsApplying(true);
                   try {
-                    // 1) 서버에 복원 요청 (복원 대상 버전명 포함)
-                    await restoreGameVersion(gameName, selected.version);
+                    // Hook을 사용하여 버전 복원 및 스냅샷 갱신
+                    const restoredVersion = await restoreSnapshot(
+                      selected.version
+                    );
 
-                    // 2) 최신 스냅샷 로그 재요청하여 화면 갱신
-                    const snapRes = await getSnapshotLog(gameName);
-                    const data = snapRes?.data;
-
-                    if (data && Array.isArray(data.versions)) {
-                      if (onSnapshotUpdate) {
-                        onSnapshotUpdate(data);
-                      }
-                      setVersions(data.versions);
-
-                      const updatedSel =
-                        data.versions.find(
-                          (v) => v.version === selected.version
-                        ) || null;
-                      setSelected(updatedSel);
+                    if (restoredVersion) {
+                      // 선택된 버전 업데이트 (Hook이 자동으로 게임 데이터도 갱신함)
+                      setSelected(restoredVersion);
                     } else {
-                      console.warn(
-                        "스냅샷 응답 형식이 올바르지 않습니다. { versions: [...] } 예상"
-                      );
-                    }
-                    // NEW: Fetch updated game data after snapshot log
-                    if (onGameDataUpdate && gameName) {
-                      try {
-                        const gdRes = await getGameData(gameName);
-                        const payload = gdRes?.data;
-
-                        if (payload && typeof payload === "object") {
-                          onGameDataUpdate(payload);
-                        } else {
-                          console.warn(
-                            "예상치 못한 /game_data 응답 형식:",
-                            payload
-                          );
-                        }
-                      } catch (gdErr) {
-                        console.warn(
-                          "게임 데이터 갱신 실패(/game_data):",
-                          gdErr
-                        );
-                      }
+                      console.warn("버전 복원에 실패했습니다.");
                     }
                   } catch (err) {
                     console.error("버전 복원 중 오류:", err);

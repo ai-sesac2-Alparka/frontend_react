@@ -1,6 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./DataEditor.css";
-import { updateGameData, getSnapshotLog } from "../api/backend";
+import { useGameData } from "../hooks/useGameData";
 
 /*
   DataEditor: 간단한 key-value JSON 편집기
@@ -225,11 +225,13 @@ function DataEditor({
   onDataChange,
   showImportExport = true,
   gameName,
-  onSnapshotUpdate,
   hiddenTopLevelKeys = [],
 }) {
   const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Hook 사용: 게임 데이터 관리 (스냅샷 갱신 포함)
+  const { saveAndRefresh } = useGameData(gameName);
   // JSON 미리보기 기능 비활성화 (상태 제거)
 
   const setValueAtPath = (path, newVal) => {
@@ -277,7 +279,7 @@ function DataEditor({
     URL.revokeObjectURL(url);
   };
 
-  // 저장 실행 핸들러: /data-update -> /snapshot-log
+  // 저장 실행 핸들러: Hook을 통한 데이터 저장 및 스냅샷 갱신
   const handleSave = async () => {
     if (isSaving) return;
     if (!gameName || !gameName.trim()) {
@@ -291,18 +293,10 @@ function DataEditor({
     try {
       setIsSaving(true);
 
-      // 1. 데이터 업데이트
-      await updateGameData(gameName, data);
-
-      // 2. 스냅샷 로그 조회
-      const snapRes = await getSnapshotLog(gameName);
-      const snapData = snapRes?.data;
-
-      if (onSnapshotUpdate && snapData) {
-        onSnapshotUpdate(snapData);
-      }
+      // Hook을 사용하여 데이터 저장 및 스냅샷 자동 갱신
+      await saveAndRefresh(data);
     } catch (err) {
-      console.error("Failed to save data or refresh snapshot-log:", err);
+      console.error("데이터 저장 중 오류:", err);
       alert("저장 중 오류가 발생했습니다.");
     } finally {
       setIsSaving(false);

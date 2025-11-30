@@ -258,7 +258,6 @@ const GameStudio = () => {
                   data={gameData}
                   onDataChange={setGameData}
                   gameName={gameTitle}
-                  onSnapshotUpdate={(snap) => console.log("DataEditor snapshot refresh", snap)}
                 />
               </div>
             )}
