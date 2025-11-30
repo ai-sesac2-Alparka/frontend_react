@@ -7,6 +7,7 @@ import SnapshotTree from "../../components/SnapshotTree";
 import DataEditor from "../../components/DataEditor";
 import AssetManager from "../../components/AssetManager/AssetManager";
 import ChatPanel from "../../components/ChatPanel/ChatPanel";
+import GameRunner from "../../components/GameRunner/GameRunner";
 import { useGame } from "../../contexts/GameContext";
 import { getSnapshotLog, getGameData } from "../../api/backend";
 import "./GameStudio.css";
@@ -24,7 +25,6 @@ const GameStudio = () => {
     setGameTitle,
     gameData,
     setGameData,
-    snapshots,
     setSnapshots,
     assets,
     setAssets,
@@ -102,16 +102,7 @@ const GameStudio = () => {
   };
   // ChatPanel manages its own messages and input.
 
-  // 전체화면 요청: iframe 요소에 대해 requestFullscreen 호출
-  const handleFullscreen = () => {
-    const iframe = gameFrameRef.current;
-    if (!iframe) return;
-    const el = iframe;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if (el.msRequestFullscreen) el.msRequestFullscreen();
-  };
+  // 핸들러는 GameRunner로 전달됩니다. gameFrameRef는 보존(필요 시 참조용).
 
   // GameStudio no longer manages asset modal internals; AssetManager handles uploads/prompts.
 
@@ -158,45 +149,13 @@ const GameStudio = () => {
           {/* 탭 컨텐츠 */}
           <div className="tab-content">
             {activeTab === "game" && (
-              <div className="game-container">
-                {/* 게임 상단 툴바 */}
-                <div className="game-toolbar">
-                  <div className="toolbar-left">
-                    <span className="status-dot">●</span> Running
-                  </div>
-                  <div className="toolbar-right">
-                    <button
-                      className="tool-btn"
-                      onClick={() => setIsMuted(!isMuted)}
-                    >
-                      {isMuted ? "🔇" : "🔊"}
-                    </button>
-                    <button
-                      className="tool-btn"
-                      title="링크 복사"
-                      onClick={handleCopyLink}
-                    >
-                      🔗
-                    </button>
-                    <button
-                      className="tool-btn"
-                      title="전체 화면"
-                      onClick={handleFullscreen}
-                    >
-                      ⛶
-                    </button>
-                  </div>
-                </div>
-                {/* 게임 Iframe (임시 URL) */}
-                <iframe
-                  ref={gameFrameRef}
-                  className="game-frame"
-                  src="https://e.widgetbot.io/channels/299881420642713600/555776561194762240" // 예시용 더미 URL
-                  title="Game Preview"
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                />
-              </div>
+              <GameRunner
+                iframeSrc={"https://e.widgetbot.io/channels/299881420642713600/555776561194762240"}
+                isMuted={isMuted}
+                onToggleMute={() => setIsMuted((m) => !m)}
+                onCopyLink={handleCopyLink}
+                onFullscreen={() => { /* can be used for additional tracking */ }}
+              />
             )}
             {activeTab === "assets" && (
               <div className="assets-panel">

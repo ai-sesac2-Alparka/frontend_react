@@ -10,7 +10,7 @@
   color: #ffffff;
   font-family: "HSSanTokki2", Helvetica;
   font-size: 36px;
-  font-weight: 400;
+  font-weight: 300;
   text-align: center;
   margin: 110px 0 24px 0; /* move down to avoid header overlap */
   text-shadow: 4px 4px 4px #00000040;
@@ -20,13 +20,14 @@
   background-color: #ffffff;
   border-radius: 50px;
   box-shadow: 10px 10px 4px #00000040;
-  padding: 28px;
-  margin: 24px auto 40px auto;
-  width: 920px; /* reduce horizontal width */
+  padding: 28px 36px 32px 36px; /* reduced vertical padding further */
+  margin: 24px auto 24px auto;
+  width: 900px; /* reduced width */
+  position: relative; /* allow absolutely positioned submit inside */
 }
 
 .order-box {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .order-title {
@@ -35,6 +36,7 @@
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 20px;
+  margin-inline-start: 30px;
 }
 
 .order-input textarea {
@@ -42,7 +44,7 @@
   height: 150px;
   padding: 20px;
   font-size: 18px;
-  font-family: 'Paperlogy-3', sans-serif;
+  font-family: 'Paperlogy-3 Light', 'Paperlogy-3', sans-serif; /* Paperlogy 3 Light */
   border: none;
   background-color: #ededed;
   resize: none;
@@ -52,22 +54,25 @@
   background-color: #3a1c6e;
   border-radius: 50px;
   box-shadow: 10px 10px 4px #00000040;
-  padding: 14px;
+  padding: 14px 16px;
   width: auto;
+  margin-block-start: -8px; /* nudge down slightly */
 }
 
 .quick-add-title {
   color: #ffffff;
-  font-family: 'Paperlogy-7', Helvetica;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 20px;
+  font-family: 'Paperlogy-4 Regular', 'Paperlogy-4', Helvetica; /* Paperlogy 4 Regular */
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  margin-inline-start: 24px;
 }
 
 .quick-add-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  margin-inline-start: 24px;
 }
 
 .quick-add-buttons button {
@@ -84,25 +89,32 @@
 
 /* submit button moved inside rectangle and uses a white triangle icon */
 .submit-button {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #3a1b6e;
-  border: 4px solid #ffffff;
+  background-color: #A3E635;
+  border: none;
   border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  box-shadow: 4px 4px 4px #00000040;
+  width: 48px; /* smaller */
+  height: 48px;
+  box-shadow: none;
   cursor: pointer;
   color: white;
+  margin: 32px auto 0 auto; /* slightly lower */
+  position: relative; /* for absolute centering of icon */
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.submit-button::before {
-  content: '';
+.submit-icon {
+  display: block;
   width: 0;
   height: 0;
-  border-left: 12px solid #ffffff;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(calc(-50% + 2px), -50%); /* nudge slightly right for visual center */
+  border-left: 14px solid #ffffff; /* balanced triangle for smaller button */
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
 }
