@@ -8,7 +8,8 @@ import DataEditor from "../../components/DataEditor";
 import AssetManager from "../../components/AssetManager/AssetManager";
 import ChatPanel from "../../components/ChatPanel/ChatPanel";
 import { useGame } from "../../contexts/GameContext";
-import { getSnapshotLog, getGameData } from "../../api/backend";
+import { useSnapshotTree } from "../../hooks/useSnapshotTree";
+import { useGameData } from "../../hooks/useGameData";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -30,6 +31,10 @@ const GameStudio = () => {
     setAssets,
   } = useGame();
 
+  // Hook을 통한 데이터 관리
+  const { fetchSnapshots } = useSnapshotTree(gameTitle);
+  const { fetchGameData } = useGameData(gameTitle);
+
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
   // Chat messages are handled inside ChatPanel component now.
@@ -40,16 +45,16 @@ const GameStudio = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // 스냅샷 로그 불러오기
-        const snapshotResponse = await getSnapshotLog(gameTitle);
-        if (snapshotResponse.data && snapshotResponse.data.versions) {
-          setSnapshots(snapshotResponse.data.versions);
+        // Hook을 통해 스냅샷 로그 불러오기
+        const snapshotData = await fetchSnapshots();
+        if (snapshotData) {
+          setSnapshots(snapshotData);
         }
 
-        // 게임 데이터 불러오기
-        const gameDataResponse = await getGameData(gameTitle);
-        if (gameDataResponse.data) {
-          setGameData(gameDataResponse.data);
+        // Hook을 통해 게임 데이터 불러오기
+        const gameDataResult = await fetchGameData();
+        if (gameDataResult) {
+          setGameData(gameDataResult);
         }
       } catch (error) {
         console.error("데이터 로딩 실패:", error);
@@ -57,7 +62,7 @@ const GameStudio = () => {
     };
 
     loadInitialData();
-  }, [gameTitle, setGameData, setSnapshots]);
+  }, [gameTitle, fetchSnapshots, fetchGameData, setGameData, setSnapshots]);
 
   const handleChatReady = (addMessageFn) => {
     chatAddMessageRef.current = addMessageFn;
