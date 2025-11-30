@@ -439,7 +439,7 @@ export default function SnapshotTree({
       <div className="snapshot-tree graph">
         {showImportExport && (
           <div className="st-toolbar">
-            <button onClick={() => fileRef.current?.click()}>
+            <button onClick={() => fileRef.current?.click()} style={{ fontFamily: 'Paperlogy-5, sans-serif' }}>
               JSON 불러오기
             </button>
             <input
@@ -463,9 +463,9 @@ export default function SnapshotTree({
 
   return (
     <div className="snapshot-tree graph">
-      {showImportExport && (
+          {showImportExport && (
         <div className="st-toolbar">
-          <button onClick={() => fileRef.current?.click()}>
+          <button onClick={() => fileRef.current?.click()} style={{ fontFamily: 'Paperlogy-5, sans-serif' }}>
             JSON 불러오기
           </button>
           <button onClick={handleExport}>JSON 내보내기</button>
