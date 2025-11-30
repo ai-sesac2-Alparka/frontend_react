@@ -19,8 +19,16 @@ const GameStudio = () => {
   const gameFrameRef = useRef(null);
 
   // Context에서 게임 상태 가져오기
-  const { gameTitle, setGameTitle, gameData, setGameData, snapshots, setSnapshots, assets, setAssets } =
-    useGame();
+  const {
+    gameTitle,
+    setGameTitle,
+    gameData,
+    setGameData,
+    snapshots,
+    setSnapshots,
+    assets,
+    setAssets,
+  } = useGame();
 
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data

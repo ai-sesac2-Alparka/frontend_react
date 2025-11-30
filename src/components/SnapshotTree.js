@@ -80,7 +80,7 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
 export default function SnapshotTree({ gameName, showImportExport = true }) {
   // Context에서 snapshots 가져오기
   const { snapshots: contextSnapshots } = useGame();
-  
+
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
   const {
     versions: hookVersions,
