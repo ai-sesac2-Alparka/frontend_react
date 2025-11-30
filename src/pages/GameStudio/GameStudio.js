@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
+import SnapshotTree from "../../components/SnapshotTree";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -196,7 +197,11 @@ const GameStudio = () => {
                 </div>
               </div>
             )}
-            {activeTab === "history" && <div className="placeholder-panel">🕒 버전 히스토리 (준비 중)</div>}
+            {activeTab === "history" && (
+              <div className="history-panel">
+                <SnapshotTree />
+              </div>
+            )}
             {activeTab === "data" && <div className="placeholder-panel">⚙️ 게임 설정 데이터 (준비 중)</div>}
           </div>
         </div>

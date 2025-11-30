@@ -1,0 +1,331 @@
+.chatbot-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    min-height: 0;
+}
+
+.message-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.message.bot {
+    position: relative;
+    padding-bottom: 40px;
+}
+
+.answer-input {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    padding: 8px;
+    border: none;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.answer-input:focus {
+    outline: none;
+    background-color: white;
+    box-shadow: 0 0 0 2px rgba(0,123,255,.25);
+}
+
+.additional-request {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.clickable-message {
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.clickable-message:hover {
+    opacity: 1;
+    transform: scale(1.02);
+}
+
+.message.bot.with-input {
+    padding-bottom: 12px;
+    background-color: #e9ecef;
+}
+
+.message.bot.with-input {
+    position: relative;
+}
+
+.message.bot.with-input::before {
+    content: '추가 요청';
+    display: block;
+    margin: 4px 0 8px 12px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.message.bot.with-input .answer-input {
+    position: relative;
+    width: calc(100% - 16px);
+    margin: 8px auto 0;
+    background-color: white;
+}
+
+.additional-request .message.bot {
+    background-color: #f0deede8;
+    margin: 0;
+    margin-right: 5px;
+    margin-left: 5px;
+    position: relative;
+}
+
+.delete-request {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.delete-request:hover {
+    background-color: rgba(220, 53, 69, 0.2);
+    transform: scale(1.1);
+}
+
+.chat-input-form {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-controls {
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.revert-button {
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.revert-button:hover {
+    background-color: #c82333;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    background-color: #f8f9fa;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    min-height: 0;
+}
+
+.message-group {
+    margin: 10px;
+    padding: 10px;
+    border-radius: 20px;
+    max-width: 88%;
+}
+
+.message-group.user {
+    background-color: rgba(0, 123, 255, 0.1);
+    margin-left: auto;
+}
+
+.message-group.bot {
+    background-color: rgba(200, 200, 200, 0.5);
+    margin-right: auto;
+    border-top-left-radius: 4px;
+}
+
+.message {
+    margin: 3px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 100%;
+}
+
+.message-group .message {
+    max-width: 95%;
+}
+
+.bot-comment {
+    margin: 0 0 10px 0;
+    padding: 0 5px;
+    color: #000000;
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+.message.user {
+    background-color: #007bff;
+    color: white;
+    margin-left: 50px;
+    margin-right: 5px;
+    border-top-right-radius: 4px;
+}
+
+.message.bot {
+    background-color: #f0deede8;
+    color: black;
+    margin-right: 5px;
+    margin-left: 5px;
+    word-wrap: break-word;
+}
+
+.message.bot.loading {
+    background-color: rgba(200, 200, 200, 0.5);
+    border: 1px solid #e9ecef;
+    font-style: italic;
+    color: black;
+    padding: 8px 12px;
+    max-width: 80%;
+}
+
+.chat-input-form {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: none;
+    height: 45px;
+    max-height: 150px;
+    overflow-y: auto;
+    line-height: 1.5;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.chat-input:disabled {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.send-button {
+    padding: 0 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    align-self: stretch;
+}
+
+.send-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.send-button:hover {
+    background-color: #0056b3;
+}
+
+.submit-group {
+    display: flex;
+    justify-content: center;    
+    padding: 12px 0;
+    margin-top: 8px;
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.submit-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-button:not(:disabled):hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+/* 스크롤바 스타일링 */
+.chat-messages::-webkit-scrollbar,
+.chat-input::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track,
+.chat-input::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb,
+.chat-input::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover,
+.chat-input::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
