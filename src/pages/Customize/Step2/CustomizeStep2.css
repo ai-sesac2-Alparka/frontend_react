@@ -71,8 +71,11 @@
   background-color: #EDEDED; /* 요청 색상 */
   height: auto;
   min-height: 140px;
-  left: 141px;
+  /* rectangle 내부에서 가로 중앙 정렬될 수 있도록 위치는 JS에서 결정하거나
+    여기선 기본적으로 중앙 정렬용 transform을 사용합니다 */
   position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   top: 220px;
   width: 680px;
   border-radius: 0px;
@@ -89,7 +92,6 @@
   letter-spacing: 0;
   line-height: normal;
   position: absolute;
-  text-shadow: 4px 4px 4px #00000040;
   top: 36px;
 }
 
@@ -177,28 +179,31 @@
 
 /* 뒤로가기 버튼 */
 .customize-step2 .polygon-wrapper {
-  background-color: #3a1b6e;
-  border: 5px solid #ffffff;
-  border-radius: 35px;
-  box-shadow: 4px 4px 4px #00000040;
+  /* 좌우 반전된 submit-button 스타일: 원형 초록 버튼(48px) */
+  background-color: #A3E635; /* submit 버튼과 동일한 녹색 */
+  border: none; /* submit 버튼과 같이 테두리 제거 */
+  border-radius: 50%;
+  box-shadow: none;
   display: flex;
-  height: 92px; /* 크기 증가 */
+  height: 48px; /* submit 버튼과 동일한 크기 */
   left: 113px;
   position: absolute;
-  top: 120px; /* 상단으로 이동 */
-  width: 92px;
+  top: 120px;
+  width: 48px;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .customize-step2 .polygon {
+  /* 흰색 삼각형을 왼쪽을 가리키도록 설정 (submit-icon의 좌우 반전) */
   width: 0;
   height: 0;
-  border-top: 14px solid transparent;
-  border-bottom: 14px solid transparent;
-  border-left: 26px solid #ffffff; /* 더 큰 흰 삼각형 */
-  transform: rotate(180deg); /* 왼쪽을 가리키도록 회전 */
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-right: 14px solid #ffffff; /* 오른쪽 대신 왼쪽을 향하도록 반전 */
   margin: 0 auto;
+  transform: translateX(-2px); /* 버튼 내부에서 시각적으로 중앙이 되도록 약간 왼쪽으로 이동 */
 }
 
 .customize-step2 .text-wrapper-5 {

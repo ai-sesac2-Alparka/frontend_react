@@ -26,7 +26,7 @@ export const CustomizeStep1 = () => {
     <div className="customize-step1">
       <Header />
       <div className="text-wrapper">📝 주문서를 자유롭게 수정해보세요!</div>
-      <div className="rectangle">
+  <div className="rectangle">
         <div className="order-box">
           <div className="order-title">직접 수정하기</div>
           <div className="order-input">
@@ -55,10 +55,10 @@ export const CustomizeStep1 = () => {
             <button onClick={() => handleQuickAdd("🏆 랭킹")}>+ 🏆 랭킹</button>
           </div>
         </div>
+        <button className="submit-button" onClick={handleSubmit}>
+          <span className="submit-icon" aria-hidden="true"></span>
+        </button>
       </div>
-      <button className="submit-button" onClick={handleSubmit}>
-        다음 →
-      </button>
     </div>
   );
 };

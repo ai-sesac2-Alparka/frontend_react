@@ -76,6 +76,7 @@ const CustomizeStep2 = () => {
           <div className="rectangle-3" />
           <div className="text-wrapper-4">이대로 만들기!</div>
         </div>
+        <div className="rectangle-2" /> {/* 배경 장식용: rectangle 내부 가로 가운데 정렬 */}
       </div>
       <div className="text-wrapper">최종 주문서</div>
       <div className="text-wrapper-3">🤖 이렇게 만들면 될까요?</div>
@@ -96,8 +97,7 @@ const CustomizeStep2 = () => {
 
       {/* --- 오른쪽: 재미 요소 추가 옵션 영역 --- */}
       <div className="div" />
-      <div className="text-wrapper-2">재미 요소 추가</div>
-      <div className="rectangle-2" /> {/* 배경 장식용 */}
+  <div className="text-wrapper-2">재미 요소 추가</div>
 
       {/* 1. 날씨 변경 (Weather) */}
     <div className="group-wrapper" onClick={() => toggleOption("weather")} style={{ cursor: "pointer" }}>

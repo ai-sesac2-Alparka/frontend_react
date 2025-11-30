@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import "./DataEditor.css";
 import { useGameData } from "../hooks/useGameData";
 import { useGame } from "../contexts/GameContext";
