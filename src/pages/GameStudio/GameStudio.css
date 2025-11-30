@@ -7,14 +7,16 @@
   padding-top: var(--header-height);
   background-color: #1a0b2e; /* 매우 어두운 보라색 배경 */
   color: white;
-  font-family: 'Paperlogy-4Regular', sans-serif;
+  font-family: "Paperlogy-4Regular", sans-serif;
   overflow: hidden;
 }
 
 /* --- 상단 헤더 --- */
 .studio-header {
-  height: calc(var(--header-height) - 20px); /* 내부 서브헤더는 전역 헤더 높이에 맞춰 조정 */
-  background-color: #26104C;
+  height: calc(
+    var(--header-height) - 20px
+  ); /* 내부 서브헤더는 전역 헤더 높이에 맞춰 조정 */
+  background-color: #26104c;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,7 +29,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   color: white;
-  font-family: 'Paperlogy-6', sans-serif; /* Paperlogy 6 SemiBold */
+  font-family: "Paperlogy-6", sans-serif; /* Paperlogy 6 SemiBold */
   font-size: 20px;
   padding: 5px;
   width: 300px;
@@ -36,7 +38,7 @@
 
 .game-title-input:focus {
   outline: none;
-  border-bottom-color: #7C3AED;
+  border-bottom-color: #7c3aed;
 }
 
 .header-right {
@@ -45,14 +47,14 @@
 }
 
 .btn-primary {
-  background-color: #7C3AED;
+  background-color: #7c3aed;
   color: white;
   border: none;
   padding: 8px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  font-family: 'Paperlogy-5', sans-serif;
+  font-family: "Paperlogy-5", sans-serif;
 }
 
 .btn-secondary {
@@ -76,7 +78,7 @@
   flex: 1; /* 남은 공간 차지 */
   display: flex;
   flex-direction: column;
-  background-color: #2D1B4E;
+  background-color: #2d1b4e;
   margin: 10px;
   border-radius: 12px;
   overflow: hidden;
@@ -95,13 +97,13 @@
   padding: 12px 20px;
   cursor: pointer;
   font-size: 16px;
-  font-family: 'Paperlogy-5', sans-serif; /* Paperlogy 5 Medium */
+  font-family: "Paperlogy-5", sans-serif; /* Paperlogy 5 Medium */
   border-bottom: 3px solid transparent;
 }
 
 .tab-btn.active {
   color: white;
-  border-bottom-color: #7C3AED;
+  border-bottom-color: #7c3aed;
 }
 
 .tab-content {
@@ -182,7 +184,7 @@
 }
 .asset-item {
   background: #ffffff11;
-  border: 2px solid rgba(255,255,255,0.06);
+  border: 2px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 12px;
   display: flex;
@@ -201,15 +203,27 @@
   border-radius: 6px;
   overflow: hidden;
 }
-.asset-preview img { width: 100%; height: 100%; object-fit: contain; }
-.asset-name { color: #ddd; font-size: 14px; }
+.asset-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.asset-name {
+  color: #ddd;
+  font-size: 14px;
+}
 
 /* Modal */
 .asset-modal-overlay {
   position: fixed;
-  left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex; align-items: center; justify-content: center;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 2000;
 }
 .asset-modal {
@@ -218,24 +232,83 @@
   color: black;
   border-radius: 10px;
   padding: 18px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
-.asset-modal h3 { margin: 0 0 12px 0; font-family: 'Paperlogy-6', sans-serif; }
-.asset-modal-body { display:flex; gap:12px; }
-.asset-modal-preview { width: 280px; height: 180px; background:#f2f2f2; display:flex; align-items:center; justify-content:center; border-radius:6px; overflow:hidden; }
-.asset-modal-preview img { width:100%; height:100%; object-fit:contain }
-.asset-modal-controls { flex:1; display:flex; flex-direction:column; gap:10px; }
-.upload-label { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; background:#7C3AED; color:white; border-radius:6px; cursor:pointer; font-family: 'Paperlogy-5', sans-serif; }
-.asset-file-input { display:none; }
-.prompt-box { background:#f6f2ff; border-radius:12px; padding:12px; border: 3px solid #3aa0ff; display:flex; flex-direction:column; gap:8px; align-items:center; }
-.prompt-box .btn-primary { align-self:center; }
-.asset-prompt { width:100%; height:100px; border-radius:8px; padding:8px; border:1px solid #ccc; }
-.asset-modal-close { margin-top:12px; padding:8px 12px; background:#eee; border-radius:6px; font-family: 'Paperlogy-5', sans-serif; }
+.asset-modal h3 {
+  margin: 0 0 12px 0;
+  font-family: "Paperlogy-6", sans-serif;
+}
+.asset-modal-body {
+  display: flex;
+  gap: 12px;
+}
+.asset-modal-preview {
+  width: 280px;
+  height: 180px;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.asset-modal-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.asset-modal-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.upload-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: #7c3aed;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Paperlogy-5", sans-serif;
+}
+.asset-file-input {
+  display: none;
+}
+.prompt-box {
+  background: #f6f2ff;
+  border-radius: 12px;
+  padding: 12px;
+  border: 3px solid #3aa0ff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.prompt-box .btn-primary {
+  align-self: center;
+}
+.asset-prompt {
+  width: 100%;
+  height: 100px;
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+.asset-modal-close {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #eee;
+  border-radius: 6px;
+  font-family: "Paperlogy-5", sans-serif;
+}
 
 /* --- 오른쪽 채팅 패널 --- */
 .chat-panel {
   width: 350px;
-  background-color: #26104C;
+  background-color: #26104c;
   border-left: 1px solid #3a1c6e;
   display: flex;
   flex-direction: column;
@@ -252,7 +325,7 @@
   margin: 0;
   font-size: 16px;
   color: white;
-  font-family: 'Paperlogy-5', sans-serif; /* Paperlogy 5 Medium */
+  font-family: "Paperlogy-5", sans-serif; /* Paperlogy 5 Medium */
 }
 
 .chat-messages {
@@ -262,7 +335,12 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  background-color: rgba(0,0,0,0.12); /* fallback; actual image set inline to use public URL */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.12
+  ); /* fallback; actual image set inline to use public URL */
   position: relative;
 }
 
@@ -303,7 +381,7 @@
 }
 
 .message.user .message-bubble {
-  background-color: #7C3AED;
+  background-color: #7c3aed;
   color: white;
   border-top-right-radius: 0;
 }
@@ -321,13 +399,13 @@
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #3a1c6e;
-  background-color: #2D1B4E;
+  background-color: #2d1b4e;
   color: white;
 }
 
 .chat-input-area button {
   padding: 0 15px;
-  background-color: #7C3AED;
+  background-color: #7c3aed;
   color: white;
   border: none;
   border-radius: 8px;

@@ -3,7 +3,7 @@
   background: #fff;
   border-radius: 10px;
   padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   max-height: 100%;
   overflow: auto;
 }
@@ -29,15 +29,19 @@
 }
 
 /* 드래그 중 시각적 피드백 */
-.st-graph-wrap.dragging { cursor: grabbing; }
+.st-graph-wrap.dragging {
+  cursor: grabbing;
+}
 
 /* 확대/축소 스케일 적용되는 캔버스 */
-.st-canvas { will-change: transform; }
+.st-canvas {
+  will-change: transform;
+}
 
 /* SVG는 계산된 width/height를 그대로 사용 (축소 방지) */
 svg {
   display: block;
-  min-width: 600px;  /* 너무 작아지지 않도록 기본 최소 폭 */
+  min-width: 600px; /* 너무 작아지지 않도록 기본 최소 폭 */
   min-height: 400px; /* 기본 최소 높이 */
 }
 
@@ -70,12 +74,12 @@ svg {
 }
 
 .st-label {
-  font: 600 13px/1.2 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  font: 600 13px/1.2 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   fill: #1f2937;
 }
 
 .st-sub {
-  font: 11px/1.2 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  font: 11px/1.2 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   fill: #6b7280;
 }
 
@@ -107,7 +111,7 @@ svg {
   background: #ffffff;
   border: 1px solid #dfe3e8;
   border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -134,7 +138,9 @@ svg {
   font-size: 12px;
 }
 
-.st-detail-close:hover { color: #000; }
+.st-detail-close:hover {
+  color: #000;
+}
 
 .st-detail-body button {
   padding: 6px 10px;
@@ -146,7 +152,9 @@ svg {
   font-size: 12px;
 }
 
-.st-detail-body button:hover { background: #0d5a27; }
+.st-detail-body button:hover {
+  background: #0d5a27;
+}
 
 .st-node {
   margin: 2px 0;
