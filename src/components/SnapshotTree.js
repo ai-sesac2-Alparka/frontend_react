@@ -2,44 +2,6 @@ import React, { useMemo, useState, useRef, useEffect } from "react";
 import "./SnapshotTree.css";
 import { useSnapshotTree } from "../hooks/useSnapshotTree";
 
-// 기본 스냅샷 데이터 (사용자가 제공한 예시)
-const DEFAULT_SNAPSHOTS = {
-  versions: [
-    // {
-    //   version: 'v1-1',
-    //   parent: null,
-    //   timestamp: '2025-11-11T15:59:22.534617',
-    //   summary: '',
-    //   is_latest: false,
-    //   is_current: false,
-    // },
-    // {
-    //   version: 'v2-1',
-    //   parent: 'v1-1',
-    //   timestamp: '2025-11-11T15:59:51.776138',
-    //   summary: '',
-    //   is_latest: false,
-    //   is_current: false,
-    // },
-    // {
-    //   version: 'v2-2',
-    //   parent: 'v1-1',
-    //   timestamp: '2025-11-11T16:00:44.291699',
-    //   summary: '',
-    //   is_latest: false,
-    //   is_current: false,
-    // },
-    // {
-    //   version: 'v3-1',
-    //   parent: 'v2-1',
-    //   timestamp: '2025-11-11T16:02:52.116514',
-    //   summary: '',
-    //   is_latest: true,
-    //   is_current: true,
-    // },
-  ],
-};
-
 // 버전 배열을 트리(루트들)로 변환
 function buildTree(versions) {
   const map = new Map();
@@ -114,11 +76,7 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
   return { width, height, nodes: placed, edges: placedEdges };
 }
 
-export default function SnapshotTree({
-  data = DEFAULT_SNAPSHOTS,
-  gameName,
-  showImportExport = true,
-}) {
+export default function SnapshotTree({ gameName, showImportExport = true }) {
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
   const {
     versions: hookVersions,
@@ -439,7 +397,10 @@ export default function SnapshotTree({
       <div className="snapshot-tree graph">
         {showImportExport && (
           <div className="st-toolbar">
-            <button onClick={() => fileRef.current?.click()} style={{ fontFamily: 'Paperlogy-5, sans-serif' }}>
+            <button
+              onClick={() => fileRef.current?.click()}
+              style={{ fontFamily: "Paperlogy-5, sans-serif" }}
+            >
               JSON 불러오기
             </button>
             <input
@@ -463,9 +424,12 @@ export default function SnapshotTree({
 
   return (
     <div className="snapshot-tree graph">
-          {showImportExport && (
+      {showImportExport && (
         <div className="st-toolbar">
-          <button onClick={() => fileRef.current?.click()} style={{ fontFamily: 'Paperlogy-5, sans-serif' }}>
+          <button
+            onClick={() => fileRef.current?.click()}
+            style={{ fontFamily: "Paperlogy-5, sans-serif" }}
+          >
             JSON 불러오기
           </button>
           <button onClick={handleExport}>JSON 내보내기</button>
