@@ -18,7 +18,8 @@ const GameStudio = () => {
   const gameFrameRef = useRef(null);
 
   // Context에서 게임 상태 가져오기
-  const { gameTitle, setGameTitle, gameData, setGameData, assets, setAssets } = useGame();
+  const { gameTitle, setGameTitle, gameData, setGameData, assets, setAssets } =
+    useGame();
 
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
@@ -33,14 +34,17 @@ const GameStudio = () => {
   const handlePromptSubmit = (promptText, asset) => {
     // 포맷된 메시지를 채팅에 추가
     const userMsg = {
-      type: 'user',
-      text: `에셋 '${asset?.name ?? ''}'에 대한 요청: ${promptText}`,
+      type: "user",
+      text: `에셋 '${asset?.name ?? ""}'에 대한 요청: ${promptText}`,
     };
     if (chatAddMessageRef.current) chatAddMessageRef.current(userMsg);
     // AI 시뮬레이션 응답
     setTimeout(() => {
       if (chatAddMessageRef.current)
-        chatAddMessageRef.current({ type: 'ai', text: '요청을 반영하여 에셋을 업데이트했습니다.' });
+        chatAddMessageRef.current({
+          type: "ai",
+          text: "요청을 반영하여 에셋을 업데이트했습니다.",
+        });
     }, 800);
   };
 
@@ -64,7 +68,7 @@ const GameStudio = () => {
       console.error("copy failed", err);
     }
   };
-    // ChatPanel manages its own messages and input.
+  // ChatPanel manages its own messages and input.
 
   // 전체화면 요청: iframe 요소에 대해 requestFullscreen 호출
   const handleFullscreen = () => {
@@ -164,7 +168,11 @@ const GameStudio = () => {
             )}
             {activeTab === "assets" && (
               <div className="assets-panel">
-                <AssetManager assets={assets} onAssetsChange={setAssets} onPromptSubmit={handlePromptSubmit} />
+                <AssetManager
+                  assets={assets}
+                  onAssetsChange={setAssets}
+                  onPromptSubmit={handlePromptSubmit}
+                />
               </div>
             )}
             {activeTab === "history" && (
@@ -184,10 +192,18 @@ const GameStudio = () => {
           </div>
         </div>
 
-  {/* --- 3. 오른쪽: 채팅 패널 (분리된 컴포넌트) --- */}
-  <ChatPanel initialMessages={[{ type: 'ai', text: '게임 생성이 완료되었습니다! 수정하고 싶은 내용이 있다면 말씀해주세요.' }]} onReady={handleChatReady} />
+        {/* --- 3. 오른쪽: 채팅 패널 (분리된 컴포넌트) --- */}
+        <ChatPanel
+          initialMessages={[
+            {
+              type: "ai",
+              text: "게임 생성이 완료되었습니다! 수정하고 싶은 내용이 있다면 말씀해주세요.",
+            },
+          ]}
+          onReady={handleChatReady}
+        />
       </div>
-  {/* asset modal moved to AssetManager component */}
+      {/* asset modal moved to AssetManager component */}
     </div>
   );
 };
