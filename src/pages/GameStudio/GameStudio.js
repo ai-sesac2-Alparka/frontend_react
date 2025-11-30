@@ -7,6 +7,7 @@ import SnapshotTree from "../../components/SnapshotTree";
 import DataEditor from "../../components/DataEditor";
 import AssetManager from "../../components/AssetManager/AssetManager";
 import ChatPanel from "../../components/ChatPanel/ChatPanel";
+import { useGame } from "../../contexts/GameContext";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -16,19 +17,13 @@ const GameStudio = () => {
   const navigate = useNavigate();
   const gameFrameRef = useRef(null);
 
-  // 상태 관리
+  // Context에서 게임 상태 가져오기
+  const { gameTitle, setGameTitle, gameData, setGameData, assets, setAssets } = useGame();
+
+  // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
-  const [gameTitle, setGameTitle] = useState("나만의 멋진 게임");
   // Chat messages are handled inside ChatPanel component now.
   const [isMuted, setIsMuted] = useState(false);
-  // assets state: sample initial assets
-  const [assets, setAssets] = useState([
-    { id: 1, type: "image", name: "background", src: "/images/background.svg" },
-    { id: 2, type: "image", name: "logo", src: "/images/logo.png" },
-    { id: 3, type: "audio", name: "bgm", src: "" },
-  ]);
-
-  const [gameData, setGameData] = useState({});
   const chatAddMessageRef = useRef(null);
 
   const handleChatReady = (addMessageFn) => {

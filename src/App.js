@@ -5,6 +5,9 @@ import './App.css';
 // Components
 import Header from './components/Header/Header';
 
+// Contexts
+import { GameProvider } from './contexts/GameContext';
+
 // Pages
 import Onboarding from './pages/Onboarding/Onboarding';
 import HomeCreation from './pages/HomeCreation/HomeCreation'; 
@@ -32,10 +35,11 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* 1. 온보딩 페이지 (헤더 없음) */}
-        <Route path="/" element={<Onboarding />} />
+    <GameProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* 1. 온보딩 페이지 (헤더 없음) */}
+          <Route path="/" element={<Onboarding />} />
         
         {/* 2. 헤더가 필요한 페이지들 (MainLayout으로 감쌈) */}
         <Route element={<MainLayout />}>
@@ -69,7 +73,8 @@ function App() {
         {/* 404 - 잘못된 경로는 온보딩으로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </GameProvider>
   );
 }
 
