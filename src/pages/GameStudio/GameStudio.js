@@ -155,7 +155,7 @@ const GameStudio = () => {
           <div className="tab-content">
             {activeTab === "game" && (
               <GameRunner
-                iframeSrc={"https://e.widgetbot.io/channels/299881420642713600/555776561194762240"}
+                iframeSrc={`http://localhost:8080/${gameTitle}/`}
                 isMuted={isMuted}
                 onToggleMute={() => setIsMuted((m) => !m)}
                 onCopyLink={handleCopyLink}
