@@ -1,6 +1,6 @@
 // src/pages/GameStudio/GameStudio.js
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import SnapshotTree from "../../components/SnapshotTree";
@@ -8,6 +8,7 @@ import DataEditor from "../../components/DataEditor";
 import AssetManager from "../../components/AssetManager/AssetManager";
 import ChatPanel from "../../components/ChatPanel/ChatPanel";
 import { useGame } from "../../contexts/GameContext";
+import { getSnapshotLog, getGameData } from "../../api/backend";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -18,7 +19,7 @@ const GameStudio = () => {
   const gameFrameRef = useRef(null);
 
   // Context에서 게임 상태 가져오기
-  const { gameTitle, setGameTitle, gameData, setGameData, assets, setAssets } =
+  const { gameTitle, setGameTitle, gameData, setGameData, snapshots, setSnapshots, assets, setAssets } =
     useGame();
 
   // 로컬 상태 관리
@@ -26,6 +27,29 @@ const GameStudio = () => {
   // Chat messages are handled inside ChatPanel component now.
   const [isMuted, setIsMuted] = useState(false);
   const chatAddMessageRef = useRef(null);
+
+  // 페이지 로드 시 백엔드에서 데이터 불러오기
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // 스냅샷 로그 불러오기
+        const snapshotResponse = await getSnapshotLog(gameTitle);
+        if (snapshotResponse.data && snapshotResponse.data.versions) {
+          setSnapshots(snapshotResponse.data.versions);
+        }
+
+        // 게임 데이터 불러오기
+        const gameDataResponse = await getGameData(gameTitle);
+        if (gameDataResponse.data) {
+          setGameData(gameDataResponse.data);
+        }
+      } catch (error) {
+        console.error("데이터 로딩 실패:", error);
+      }
+    };
+
+    loadInitialData();
+  }, [gameTitle, setGameData, setSnapshots]);
 
   const handleChatReady = (addMessageFn) => {
     chatAddMessageRef.current = addMessageFn;

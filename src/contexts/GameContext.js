@@ -5,8 +5,9 @@ import React, { createContext, useContext, useState } from "react";
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const [gameTitle, setGameTitle] = useState("나만의 멋진 게임");
+  const [gameTitle, setGameTitle] = useState("sy_3d_dddd4");
   const [gameData, setGameData] = useState({});
+  const [snapshots, setSnapshots] = useState([]);
   const [assets, setAssets] = useState([
     { id: 1, type: "image", name: "background", src: "/images/background.svg" },
     { id: 2, type: "image", name: "logo", src: "/images/logo.png" },
@@ -20,6 +21,8 @@ export const GameProvider = ({ children }) => {
         setGameTitle,
         gameData,
         setGameData,
+        snapshots,
+        setSnapshots,
         assets,
         setAssets,
       }}

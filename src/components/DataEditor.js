@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./DataEditor.css";
 import { useGameData } from "../hooks/useGameData";
+import { useGame } from "../contexts/GameContext";
 
 /*
   DataEditor: 간단한 key-value JSON 편집기
@@ -230,9 +231,15 @@ function DataEditor({
   const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Context에서 gameData 가져오기
+  const { gameData: contextGameData } = useGame();
+
   // Hook 사용: 게임 데이터 관리 (스냅샷 갱신 포함)
   const { saveAndRefresh } = useGameData(gameName);
   // JSON 미리보기 기능 비활성화 (상태 제거)
+
+  // Context의 gameData를 우선 사용, 없으면 props의 data 사용
+  const effectiveData = data || contextGameData;
 
   const setValueAtPath = (path, newVal) => {
     onDataChange((prev) => {
@@ -266,7 +273,7 @@ function DataEditor({
     reader.readAsText(file);
   };
 
-  const buildObject = () => data;
+  const buildObject = () => effectiveData;
 
   const handleExport = () => {
     const dataStr = JSON.stringify(buildObject(), null, 2);
@@ -286,7 +293,7 @@ function DataEditor({
       alert("게임 이름을 먼저 입력해주세요.");
       return;
     }
-    if (data === undefined || data === null) {
+    if (effectiveData === undefined || effectiveData === null) {
       alert("보낼 데이터가 없습니다.");
       return;
     }
@@ -294,7 +301,7 @@ function DataEditor({
       setIsSaving(true);
 
       // Hook을 사용하여 데이터 저장 및 스냅샷 자동 갱신
-      await saveAndRefresh(data);
+      await saveAndRefresh(effectiveData);
     } catch (err) {
       console.error("데이터 저장 중 오류:", err);
       alert("저장 중 오류가 발생했습니다.");
@@ -349,7 +356,7 @@ function DataEditor({
       <div className="hierarchy-editor">
         <NodeEditor
           path={[]}
-          value={data}
+          value={effectiveData}
           onChange={setValueAtPath}
           depth={0}
           hiddenTopLevelKeys={hiddenTopLevelKeys}

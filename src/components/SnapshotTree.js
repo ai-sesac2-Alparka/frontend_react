@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import "./SnapshotTree.css";
 import { useSnapshotTree } from "../hooks/useSnapshotTree";
+import { useGame } from "../contexts/GameContext";
 
 // 버전 배열을 트리(루트들)로 변환
 function buildTree(versions) {
@@ -77,6 +78,9 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
 }
 
 export default function SnapshotTree({ gameName, showImportExport = true }) {
+  // Context에서 snapshots 가져오기
+  const { snapshots: contextSnapshots } = useGame();
+  
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
   const {
     versions: hookVersions,
@@ -86,8 +90,8 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
 
   const [customData, setCustomData] = useState(null);
 
-  // Hook의 versions 또는 customData 사용
-  const versions = customData?.versions || hookVersions;
+  // Context의 snapshots, Hook의 versions, customData 우선순위로 사용
+  const versions = customData?.versions || contextSnapshots || hookVersions;
   const [selected, setSelected] = useState(null); // 선택된 버전 오브젝트
   const [isApplying, setIsApplying] = useState(false);
   const fileRef = useRef(null);
