@@ -29,14 +29,18 @@
     font-size: 64px;
     margin-top: 40px;
     margin-bottom: 24px;
+    font-weight: 500; /* 가독성 위해 약간 얇게 조정 */
+    text-shadow: 0 6px 18px rgba(0,0,0,0.35); /* 부드러운 그림자 추가 */
 }
 
 .hero-subtitle {
     font-family: 'Paperlogy-5', var(--font-body);
-    font-size: 24px;
+    font-size: 22px; /* 약간 축소 */
     line-height: 1.6;
     opacity: 0.9;
     margin-bottom: 48px;
+    font-weight: 500; /* 약간 얇게 */
+    letter-spacing: 0.6px; /* 자간 소폭 확대 */
 }
 
 .btn-hero-cta {
@@ -115,7 +119,28 @@
     font-size: 48px;
     color: white;
     text-align: center;
-    margin-bottom: 60px;
+    margin-bottom: 110px; /* 간격을 더 넓힘 */
+    font-weight: 400; /* 더 얇게 */
+    letter-spacing: 2px; /* 자간 더 확대 */
+    text-shadow: 0 8px 24px rgba(0,0,0,0.35); /* 타이틀 그림자 */
+    position: relative;
+}
+
+.section-title-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px; /* 이미지와 타이틀 사이 간격 */
+}
+
+.section-title-wrapper img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+}
+
+.section-title-wrapper img.congrats-right {
+    transform: translateY(-20px);
 }
 
 .creator-box {

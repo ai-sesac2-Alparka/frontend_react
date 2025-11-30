@@ -19,7 +19,7 @@ import Arcade from './pages/Arcade/Arcade';
 function App() {
   // 👇 여기를 true로 하면 "로그인 된 상태" (마이페이지 접근 가능)
   // 👇 여기를 false로 하면 "로그인 안 된 상태" (마이페이지 접근 불가, 로그인 버튼 보임)
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn] = useState(true);
 
   // 헤더를 포함하는 레이아웃 컴포넌트 (온보딩 제외 모든 페이지용)
   const MainLayout = () => {

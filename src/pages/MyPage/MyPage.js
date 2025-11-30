@@ -1,6 +1,6 @@
 // src/pages/MyPage/MyPage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MyPage.css';
 
@@ -10,10 +10,26 @@ const profileImage = "/images/alpaca.png";
 const MyPage = ({ isLoggedIn }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("created"); // created, liked, recent
+  // 사용자명 인라인 편집 상태
+  const [userName, setUserName] = useState('알파카 장인');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  // user-bio will show number of created games by default; make editable
+  const [userBio, setUserBio] = useState('');
+  const [bioInput, setBioInput] = useState('');
+  // profile image editable state (preview URL)
+  const [profileImageUrl, setProfileImageUrl] = useState(profileImage);
+  const hiddenFileInputRef = useRef(null);
 
   // 로그인 체크
   useEffect(() => {
-    if (!isLoggedIn) {
+    // 개발 중에는 백엔드 로그인 없이 페이지를 확인할 수 있도록 우회 옵션 제공
+    // - 개발 모드일 때 자동 허용
+    // - 또는 URL에 ?dev=true 쿼리 파라미터가 있으면 강제 허용
+    const urlParams = new URLSearchParams(window.location.search);
+    const devOverride = urlParams.get('dev') === 'true';
+
+    if (!isLoggedIn && !devOverride && process.env.NODE_ENV !== 'development') {
       alert("로그인이 필요한 페이지입니다.");
       navigate('/');
     }
@@ -36,29 +52,118 @@ const MyPage = ({ isLoggedIn }) => {
     recent: generateDummyGames(3, 'recent')
   };
 
+  // 초기 bio는 '만든 게임 수'로 설정
+  useEffect(() => {
+    setUserBio(`${games.created.length}개의 게임을 만들었습니다.`);
+  }, [games.created.length]);
+
   return (
     <div className="mypage-container">
       {/* 1. 프로필 섹션 */}
       <section className="profile-section">
         <div className="profile-card">
           <div className="profile-image-wrapper">
-            <img src={profileImage} alt="Profile" className="profile-image" />
-            <button className="edit-icon-btn">✏️</button>
+            <img
+              src={profileImageUrl}
+              alt="Profile"
+              className="profile-image"
+              onClick={() => {
+                // 이미지 클릭 시 에디트 모드에서만 업로드 트리거
+                if (isEditingName && hiddenFileInputRef.current) {
+                  hiddenFileInputRef.current.click();
+                }
+              }}
+            />
+            <button
+              className="edit-icon-btn"
+              onClick={() => {
+                // 편집 모드로 진입: 이름, 바이오, 이미지 프리셋 로드
+                setNameInput(userName);
+                setBioInput(userBio);
+                setProfileImageUrl(profileImageUrl || profileImage);
+                setIsEditingName(true);
+              }}
+              aria-label="Edit profile"
+            >
+              ✏️
+            </button>
+            {/* 숨겨진 파일 입력: 이미지 클릭으로 트리거됩니다 */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={(el) => (hiddenFileInputRef.current = el)}
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => setProfileImageUrl(ev.target.result);
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
           </div>
           <div className="profile-info">
-            <h2 className="user-name">알파카 장인</h2>
-            <p className="user-bio">"오늘도 코딩하는 알파카입니다."</p>
-            <div className="profile-stats">
-              <div className="stat-item">
-                <span className="stat-label">만든 게임</span>
-                <span className="stat-value">5</span>
+            {isEditingName ? (
+              <input
+                className="user-name-input"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="이름을 입력하세요"
+              />
+            ) : (
+              <h2 className="user-name">{userName}</h2>
+            )}
+            {/* user-bio: 기본은 만든 게임 수, 편집 가능 */}
+            {isEditingName ? (
+              <textarea
+                className="user-bio-input"
+                value={bioInput}
+                onChange={(e) => setBioInput(e.target.value)}
+                placeholder="간단한 소개나 상태 메시지를 입력하세요"
+                rows={2}
+              />
+            ) : (
+              <p className="user-bio">{userBio}</p>
+            )}
+            {/* stat-label / stat-value 섹션 제거 (팔로워 확인 기능 제거 요청) */}
+            {/* 이미지 업로드 입력은 편집 모드에서만 표시 */}
+            {isEditingName && (
+              <div className="image-edit-row">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setProfileImageUrl(ev.target.result);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
               </div>
-              <div className="stat-item">
-                <span className="stat-label">팔로워</span>
-                <span className="stat-value">128</span>
-              </div>
-            </div>
-            <button className="btn-edit-profile">정보 수정</button>
+            )}
+
+            <button
+              className="btn-edit-profile"
+              onClick={() => {
+                if (isEditingName) {
+                  // 저장 동작: 이름, 바이오, 이미지 모두 적용
+                  setUserName(nameInput || userName);
+                  setUserBio(bioInput || userBio);
+                  // profileImageUrl already updated on file select
+                  setIsEditingName(false);
+                } else {
+                  // 편집 모드로 진입
+                  setNameInput(userName);
+                  setBioInput(userBio);
+                  setIsEditingName(true);
+                }
+              }}
+            >
+              {isEditingName ? '변경사항 저장' : '프로필 편집'}
+            </button>
           </div>
         </div>
       </section>

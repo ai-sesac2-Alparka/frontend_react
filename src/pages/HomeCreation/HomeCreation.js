@@ -95,9 +95,13 @@ function HomeCreation() {
 
                 {/* 게임 생성 섹션 */}
                 <section id="game-creator" className="game-creator-section">
-                    <h2 className="section-title-creator">
-                        오늘은 어떤 게임을<br/>만들어볼까요?
-                    </h2>
+                    <div className="section-title-wrapper">
+                        <img src="/images/congrats 1.png" alt="left" />
+                        <h2 className="section-title-creator">
+                            오늘은 어떤 게임을<br/>만들어볼까요?
+                        </h2>
+                        <img src="/images/congrats 3.png" alt="right" className="congrats-right" />
+                    </div>
                     
                     <div className="creator-box">
                         {/* 장르 선택 */}
