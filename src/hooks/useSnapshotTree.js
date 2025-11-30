@@ -1,5 +1,9 @@
 import { useState, useCallback } from "react";
-import { getSnapshotLog, restoreGameVersion, getGameData } from "../api/backend";
+import {
+  getSnapshotLog,
+  restoreGameVersion,
+  getGameData,
+} from "../api/backend";
 
 /**
  * SnapshotTree 데이터를 관리하는 Custom Hook
@@ -71,7 +75,7 @@ export const useSnapshotTree = (gameName) => {
           const restoredVersion = data.versions.find(
             (v) => v.version === targetVersion
           );
-          
+
           // 3. 게임 데이터도 자동으로 갱신 (스냅샷 복원 후 게임 상태 동기화)
           try {
             await getGameData(gameName);
@@ -79,7 +83,7 @@ export const useSnapshotTree = (gameName) => {
             console.warn("게임 데이터 갱신 실패:", gdErr);
             // 게임 데이터 갱신 실패해도 스냅샷 복원은 성공으로 처리
           }
-          
+
           return restoredVersion || null;
         } else {
           console.warn("스냅샷 응답 형식이 올바르지 않습니다.");

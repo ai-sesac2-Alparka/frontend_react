@@ -120,10 +120,14 @@ export default function SnapshotTree({
   showImportExport = true,
 }) {
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
-  const { versions: hookVersions, restoreAndRefresh: restoreSnapshot, fetchSnapshots } = useSnapshotTree(gameName);
+  const {
+    versions: hookVersions,
+    restoreAndRefresh: restoreSnapshot,
+    fetchSnapshots,
+  } = useSnapshotTree(gameName);
 
   const [customData, setCustomData] = useState(null);
-  
+
   // Hook의 versions 또는 customData 사용
   const versions = customData?.versions || hookVersions;
   const [selected, setSelected] = useState(null); // 선택된 버전 오브젝트
