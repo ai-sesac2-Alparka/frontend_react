@@ -64,7 +64,7 @@ svg {
 
 .st-node.latest:not(.current) {
   fill: #e8f0fe;
-  stroke: #1967d2;
+  stroke: #7C3AED;
 }
 
 /* 현재 노드 내부의 작은 초록색 원 (불투명, 노드보다 약간 작음) */
@@ -89,17 +89,23 @@ svg {
   padding: 12px;
 }
 
+.st-toolbar-right {
+  margin-left: auto; /* push to the right */
+  display: flex;
+  align-items: center;
+}
+
 .st-toolbar button {
   padding: 6px 12px;
   border: none;
   border-radius: 6px;
-  background: #007bff;
+  background: #7C3AED;
   color: #fff;
   cursor: pointer;
 }
 
 .st-toolbar button:hover {
-  background: #0056b3;
+  background: #6b7a90;
 }
 
 /* 상세 패널 */

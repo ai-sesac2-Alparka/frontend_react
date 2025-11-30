@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import SnapshotTree from "../../components/SnapshotTree";
+import DataEditor from "../../components/DataEditor";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -32,6 +33,7 @@ const GameStudio = () => {
   ]);
 
   const [assetModal, setAssetModal] = useState({ open: false, asset: null });
+  const [gameData, setGameData] = useState({});
 
   // 채팅 전송 핸들러
   const handleSendMessage = () => {
@@ -251,8 +253,13 @@ const GameStudio = () => {
               </div>
             )}
             {activeTab === "data" && (
-              <div className="placeholder-panel">
-                ⚙️ 게임 설정 데이터 (준비 중)
+              <div className="data-panel">
+                <DataEditor
+                  data={gameData}
+                  onDataChange={setGameData}
+                  gameName={gameTitle}
+                  onSnapshotUpdate={(snap) => console.log("DataEditor snapshot refresh", snap)}
+                />
               </div>
             )}
           </div>

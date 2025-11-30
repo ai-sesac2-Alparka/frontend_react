@@ -1,16 +1,52 @@
-.data-editor-container { padding: 12px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.data-editor-container { padding: 12px; display: flex; flex-direction: column; height: 100%; overflow: hidden; box-sizing: border-box; font-family: 'Paperlogy-4Regular', sans-serif; }
 .data-editor-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
 .data-editor-table { border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
 .data-editor-header, .data-editor-row { display: grid; grid-template-columns: 2fr 1fr 3fr; gap: 6px; align-items: center; padding: 8px; }
-.data-editor-header { background: #f4f4f4; font-weight: 600; }
+.data-editor-header { background: #7C3AED; font-weight: 600; color: white; }
 .key-input, .value-input, select { width: 100%; padding: 6px 8px; box-sizing: border-box; }
 .key-label, .type-label { padding: 6px 8px; background: #fff; border: 1px solid #ddd; border-radius:4px; }
-.data-editor-preview { margin-top: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 10px; max-height: 30%; overflow: auto; }
+.data-editor-preview { margin-top: 16px; background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 10px; max-height: 30%; overflow: auto; box-sizing: border-box; }
 /* 미리보기의 긴 텍스트 처리 */
 .data-editor-preview pre { margin: 0; white-space: pre-wrap; word-break: break-word; max-width: 100%; overflow: auto; }
 
 /* 계층 편집 뷰 */
-.hierarchy-editor { margin-top: 8px; flex: 1; min-height: 0; overflow: auto; }
+.hierarchy-editor { margin-top: 8px; flex: 1; min-height: 0; overflow: auto; max-height: calc(100vh - 320px); }
 .collapsible-node .node-header:hover { background: rgba(0,0,0,0.03); }
 .type-badge { background: #eef; padding: 2px 6px; border-radius: 10px; }
 .leaf-editor input, .leaf-editor select { width: 60%; padding: 6px 8px; }
+
+/* h2 스타일: Paperlogy-7 Bold */
+.data-editor-container h2 {
+	font-family: 'Paperlogy-7', sans-serif;
+	font-weight: 800;
+	margin: 0;
+}
+
+/* 버튼 스타일: 텍스트 바깥쪽에 버튼 도형 */
+.data-editor-actions button {
+	position: relative;
+	background: #f3f4f6; /* 기본 버튼 도형 색 */
+	color: #111;
+	border: none;
+	padding: 8px 14px;
+	cursor: pointer;
+	font-family: 'Paperlogy-5', sans-serif; /* 변경된 버튼 글꼴 */
+	border-radius: 8px;
+	box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.data-editor-actions button::before {
+	/* 제거: 외곽 도형 대신 버튼 자체에 색을 채워 가독성 향상 */
+	content: none;
+}
+.data-editor-actions .btn-primary {
+	background: #7C3AED;
+	color: white;
+}
+.data-editor-actions button:hover {
+	transform: translateY(-2px);
+}
+
+/* h2 위치를 오른쪽으로 소폭 이동 */
+.data-editor-container h2 {
+	margin-left: 8px;
+}

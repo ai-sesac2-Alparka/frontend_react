@@ -320,7 +320,7 @@ function DataEditor({
           gap: 12,
         }}
       >
-        <h2 style={{ margin: 0 }}>게임 설정 편집</h2>
+        <h2 style={{ margin: 0 }}>⚙️게임 설정 편집</h2>
         <div
           className="data-editor-actions"
           style={{ display: "flex", alignItems: "center", gap: 8 }}

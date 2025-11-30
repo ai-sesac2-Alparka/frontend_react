@@ -139,6 +139,7 @@ export default function SnapshotTree({
 
   const MIN_SCALE = 0.7;
   const MAX_SCALE = 2.5;
+  const [ctrlZoomEnabled, setCtrlZoomEnabled] = useState(false);
 
   useEffect(() => {
     scaleRef.current = scale;
@@ -166,6 +167,50 @@ export default function SnapshotTree({
     () => layoutTreeVertical(roots),
     [roots]
   );
+
+  // Zoom helpers available to UI and event handlers
+  const doZoom = (e, wrap) => {
+    const rect = wrap.getBoundingClientRect();
+    const mouseXInView = e.clientX - rect.left;
+    const mouseYInView = e.clientY - rect.top;
+    const preContentX = (wrap.scrollLeft + mouseXInView) / scaleRef.current;
+    const preContentY = (wrap.scrollTop + mouseYInView) / scaleRef.current;
+    const direction = e.deltaY < 0 ? 1 : -1;
+    const factor = direction > 0 ? 1.1 : 0.9;
+    const next = Math.max(
+      MIN_SCALE,
+      Math.min(MAX_SCALE, scaleRef.current * factor)
+    );
+    if (next === scaleRef.current) return;
+    setScale(next);
+    requestAnimationFrame(() => {
+      wrap.scrollLeft = preContentX * next - mouseXInView;
+      wrap.scrollTop = preContentY * next - mouseYInView;
+    });
+  };
+
+  const zoomByFactor = (factor) => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const centerX = wrap.clientWidth / 2;
+    const centerY = wrap.clientHeight / 2;
+    const preContentX = (wrap.scrollLeft + centerX) / scaleRef.current;
+    const preContentY = (wrap.scrollTop + centerY) / scaleRef.current;
+    const next = Math.max(
+      MIN_SCALE,
+      Math.min(MAX_SCALE, scaleRef.current * factor)
+    );
+    if (next === scaleRef.current) return;
+    setScale(next);
+    requestAnimationFrame(() => {
+      wrap.scrollLeft = preContentX * next - centerX;
+      wrap.scrollTop = preContentY * next - centerY;
+    });
+  };
+
+  const zoomIn = () => zoomByFactor(1.1);
+  const zoomOut = () => zoomByFactor(0.9);
+  
 
   // 초기 확대 비율: 콘텐츠가 래퍼보다 크면 최소 배율로 시작, 아니면 1로 시작
   useEffect(() => {
@@ -247,37 +292,92 @@ export default function SnapshotTree({
 
   // Ctrl+휠 확대/축소를 위한 wheel 이벤트 리스너 (passive: false로 설정)
   useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
+    // Track whether pointer is currently inside the graph area.
+    const isPointerInsideRef = { current: false };
+    const wrapEl = wrapRef.current;
+    const enter = () => (isPointerInsideRef.current = true);
+    const leave = () => (isPointerInsideRef.current = false);
+    if (wrapEl) {
+      wrapEl.addEventListener("pointerenter", enter);
+      wrapEl.addEventListener("pointerleave", leave);
+    }
 
-    const handleWheel = (e) => {
-      // Ctrl+휠 또는 Meta+휠(맥)로 확대/축소
+  // (no-op here; helpers live in component scope)
+
+    // Handler attached directly to the wrap element (non-passive) to try to prevent browser zoom
+    const wrapWheelHandler = (e) => {
+      // Only handle when Ctrl (or Meta on Mac) is pressed
       if (!e.ctrlKey && !e.metaKey) return;
+      if (!isPointerInsideRef.current) return;
+      // Prevent browser zoom/page scroll
       e.preventDefault();
-      const rect = el.getBoundingClientRect();
-      const mouseXInView = e.clientX - rect.left;
-      const mouseYInView = e.clientY - rect.top;
-      const preContentX = (el.scrollLeft + mouseXInView) / scaleRef.current;
-      const preContentY = (el.scrollTop + mouseYInView) / scaleRef.current;
-      const direction = e.deltaY < 0 ? 1 : -1;
-      const factor = direction > 0 ? 1.1 : 0.9;
-      const next = Math.max(
-        MIN_SCALE,
-        Math.min(MAX_SCALE, scaleRef.current * factor)
-      );
-      if (next === scaleRef.current) return;
-      setScale(next);
-      requestAnimationFrame(() => {
-        el.scrollLeft = preContentX * next - mouseXInView;
-        el.scrollTop = preContentY * next - mouseYInView;
-      });
+      e.stopPropagation();
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      doZoom(e, wrap);
     };
 
-    el.addEventListener("wheel", handleWheel, { passive: false });
+    // Fallback capture listeners on document/window in case wrap listener doesn't catch all cases
+    const captureHandler = (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      if (!isPointerInsideRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      doZoom(e, wrap);
+    };
+
+    if (wrapEl) {
+      // non-passive so we can call preventDefault
+      wrapEl.addEventListener("wheel", wrapWheelHandler, { passive: false });
+    }
+    document.addEventListener("wheel", captureHandler, { passive: false, capture: true });
+    window.addEventListener("wheel", captureHandler, { passive: false, capture: true });
+
     return () => {
-      el.removeEventListener("wheel", handleWheel);
+      if (wrapEl) {
+        wrapEl.removeEventListener("pointerenter", enter);
+        wrapEl.removeEventListener("pointerleave", leave);
+        wrapEl.removeEventListener("wheel", wrapWheelHandler, { passive: false });
+      }
+      document.removeEventListener("wheel", captureHandler, { capture: true });
+      window.removeEventListener("wheel", captureHandler, { capture: true });
     };
   }, []);
+
+  // Overlay wheel handler when ctrlZoomEnabled is true
+  useEffect(() => {
+    if (!ctrlZoomEnabled) return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const overlay = document.createElement("div");
+    overlay.style.position = "absolute";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.right = "0";
+    overlay.style.bottom = "0";
+    overlay.style.zIndex = "999";
+    overlay.style.background = "transparent";
+    // ensure it receives pointer events
+    overlay.style.pointerEvents = "auto";
+    overlay.tabIndex = -1;
+    const handler = (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      doZoom(e, wrap);
+    };
+    overlay.addEventListener("wheel", handler, { passive: false });
+    wrap.style.position = wrap.style.position || "relative";
+    wrap.appendChild(overlay);
+    return () => {
+      overlay.removeEventListener("wheel", handler);
+      try {
+        wrap.removeChild(overlay);
+      } catch {}
+    };
+  }, [ctrlZoomEnabled]);
 
   const beginDrag = (e) => {
     if (e.button !== 0) return;
@@ -361,6 +461,21 @@ export default function SnapshotTree({
             JSON 불러오기
           </button>
           <button onClick={handleExport}>JSON 내보내기</button>
+          {/* Zoom controls for environments where Ctrl+wheel is captured by the browser */}
+          <button onClick={() => zoomIn()} title="Zoom In">
+            +
+          </button>
+          <button onClick={() => zoomOut()} title="Zoom Out">
+            −
+          </button>
+          
+          <button
+            onClick={() => setCtrlZoomEnabled((v) => !v)}
+            title="Toggle Ctrl Zoom Mode"
+            style={{ background: ctrlZoomEnabled ? "#ddd" : "transparent" }}
+          >
+            {ctrlZoomEnabled ? "Ctrl Zoom: ON" : "Ctrl Zoom: OFF"}
+          </button>
           <input
             ref={fileRef}
             type="file"
@@ -369,15 +484,17 @@ export default function SnapshotTree({
             onChange={handleFile}
           />
           {customData && (
-            <button
-              onClick={() => {
-                setCustomData(null);
-                setVersions(data?.versions || []);
-                setSelected(null);
-              }}
-            >
-              기본 데이터로 복원
-            </button>
+            <div className="st-toolbar-right">
+              <button
+                onClick={() => {
+                  setCustomData(null);
+                  setVersions(data?.versions || []);
+                  setSelected(null);
+                }}
+              >
+                기본 데이터로 복원
+              </button>
+            </div>
           )}
         </div>
       )}
