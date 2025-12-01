@@ -84,6 +84,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
     setSnapshots,
     setGameData,
     setAssets,
+    setAssetStamp,
   } = useGame();
 
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
@@ -109,18 +110,21 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
 
   const MIN_SCALE = 0.7;
   const MAX_SCALE = 2.5;
-  const [ctrlZoomEnabled, setCtrlZoomEnabled] = useState(false);
 
   useEffect(() => {
     scaleRef.current = scale;
   }, [scale]);
 
-  // 컴포넌트 마운트 시 스냅샷 로드
+  // 컴포넌트 마운트 시 스냅샷 로드 (Context에 데이터가 없을 때만)
   useEffect(() => {
-    if (gameName && !customData) {
+    if (
+      gameName &&
+      !customData &&
+      (!contextSnapshots || contextSnapshots.length === 0)
+    ) {
       fetchSnapshots();
     }
-  }, [gameName, customData, fetchSnapshots]);
+  }, [gameName, customData, contextSnapshots, fetchSnapshots]);
 
   // 외부 data 혹은 업로드 데이터 변화에 따라 versions 상태 갱신
   const effectiveData = useMemo(
@@ -322,39 +326,6 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
     };
   }, []);
 
-  // Overlay wheel handler when ctrlZoomEnabled is true
-  useEffect(() => {
-    if (!ctrlZoomEnabled) return;
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const overlay = document.createElement("div");
-    overlay.style.position = "absolute";
-    overlay.style.left = "0";
-    overlay.style.top = "0";
-    overlay.style.right = "0";
-    overlay.style.bottom = "0";
-    overlay.style.zIndex = "999";
-    overlay.style.background = "transparent";
-    // ensure it receives pointer events
-    overlay.style.pointerEvents = "auto";
-    overlay.tabIndex = -1;
-    const handler = (e) => {
-      if (!e.ctrlKey && !e.metaKey) return;
-      e.preventDefault();
-      e.stopPropagation();
-      doZoom(e, wrap);
-    };
-    overlay.addEventListener("wheel", handler, { passive: false });
-    wrap.style.position = wrap.style.position || "relative";
-    wrap.appendChild(overlay);
-    return () => {
-      overlay.removeEventListener("wheel", handler);
-      try {
-        wrap.removeChild(overlay);
-      } catch {}
-    };
-  }, [ctrlZoomEnabled]);
-
   const beginDrag = (e) => {
     if (e.button !== 0) return;
     const el = wrapRef.current;
@@ -442,21 +413,6 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
             JSON 불러오기
           </button>
           <button onClick={handleExport}>JSON 내보내기</button>
-          {/* Zoom controls for environments where Ctrl+wheel is captured by the browser */}
-          <button onClick={() => zoomIn()} title="Zoom In">
-            +
-          </button>
-          <button onClick={() => zoomOut()} title="Zoom Out">
-            −
-          </button>
-
-          <button
-            onClick={() => setCtrlZoomEnabled((v) => !v)}
-            title="Toggle Ctrl Zoom Mode"
-            style={{ background: ctrlZoomEnabled ? "#ddd" : "transparent" }}
-          >
-            {ctrlZoomEnabled ? "Ctrl Zoom: ON" : "Ctrl Zoom: OFF"}
-          </button>
           <input
             ref={fileRef}
             type="file"
@@ -541,6 +497,17 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
             </g>
           </svg>
         </div>
+      </div>
+
+      {/* 확대/축소 컨트롤 - 우측 하단 고정 */}
+      <div className="st-zoom-controls">
+        <button onClick={() => zoomIn()} title="확대">
+          +
+        </button>
+        <button onClick={() => zoomOut()} title="축소">
+          −
+        </button>
+        <div className="st-zoom-info">{scale.toFixed(2)}x</div>
       </div>
 
       {selected && (
@@ -631,7 +598,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
                         const sounds = Array.isArray(result.assets.sounds)
                           ? result.assets.sounds.map((snd, idx) => ({
                               id: `snd-${idx}`,
-                              type: "audio",
+                              type: "sound",
                               name: snd.name,
                               src: snd.url.startsWith("http")
                                 ? snd.url
@@ -642,7 +609,11 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
                             }))
                           : [];
                         setAssets([...images, ...sounds]);
+                        setAssetStamp(Date.now()); // 버전 복원 시 스탬프 갱신
                       }
+
+                      // 성공 시 팝업 닫기
+                      setSelected(null);
                     } else {
                       console.warn("버전 복원에 실패했습니다. result:", result);
                       alert("버전 복원에 실패했습니다.");

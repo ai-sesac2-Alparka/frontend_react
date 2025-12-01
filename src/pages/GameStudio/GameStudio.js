@@ -11,6 +11,7 @@ import GameRunner from "../../components/GameRunner/GameRunner";
 import { useGame } from "../../contexts/GameContext";
 import { useSnapshotTree } from "../../hooks/useSnapshotTree";
 import { useGameData } from "../../hooks/useGameData";
+import { useAssets } from "../../hooks/useAssets";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -21,12 +22,20 @@ const GameStudio = () => {
   const gameFrameRef = useRef(null);
 
   // Context에서 게임 상태 가져오기
-  const { gameTitle, setGameTitle, gameData, setGameData, setSnapshots } =
-    useGame();
+  const {
+    gameTitle,
+    setGameTitle,
+    gameData,
+    setGameData,
+    setSnapshots,
+    setAssets,
+    setAssetStamp,
+  } = useGame();
 
   // Hook을 통한 데이터 관리
   const { fetchSnapshots } = useSnapshotTree(gameTitle);
   const { fetchGameData } = useGameData(gameTitle);
+  const { fetchAssets } = useAssets(gameTitle);
 
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
@@ -49,13 +58,29 @@ const GameStudio = () => {
         if (gameDataResult) {
           setGameData(gameDataResult);
         }
+
+        // Hook을 통해 에셋 불러오기
+        const assetsResult = await fetchAssets();
+        if (assetsResult) {
+          setAssets(assetsResult);
+          setAssetStamp(Date.now()); // 초기 로드 시 스탬프 갱신
+        }
       } catch (error) {
         console.error("데이터 로딩 실패:", error);
       }
     };
 
     loadInitialData();
-  }, [gameTitle, fetchSnapshots, fetchGameData, setGameData, setSnapshots]);
+  }, [
+    gameTitle,
+    fetchSnapshots,
+    fetchGameData,
+    fetchAssets,
+    setGameData,
+    setSnapshots,
+    setAssets,
+    setAssetStamp,
+  ]);
 
   const handleChatReady = (addMessageFn) => {
     chatAddMessageRef.current = addMessageFn;
@@ -171,7 +196,7 @@ const GameStudio = () => {
             )}
             {activeTab === "history" && (
               <div className="history-panel">
-                <SnapshotTree gameName={gameTitle} />
+                <SnapshotTree gameName={gameTitle} showImportExport={false} />
               </div>
             )}
             {activeTab === "data" && (
@@ -180,6 +205,7 @@ const GameStudio = () => {
                   data={gameData}
                   onDataChange={setGameData}
                   gameName={gameTitle}
+                  showImportExport={false}
                 />
               </div>
             )}

@@ -1,5 +1,10 @@
 import { useState, useCallback } from "react";
-import { getGameAssets, replaceAsset, getSnapshotLog } from "../api/backend";
+import {
+  getGameAssets,
+  replaceAsset,
+  getSnapshotLog,
+  getGameData,
+} from "../api/backend";
 
 /**
  * Assets(에셋) 데이터를 관리하는 Custom Hook
@@ -47,7 +52,7 @@ export const useAssets = (gameName) => {
       const sounds = Array.isArray(data?.sounds)
         ? data.sounds.map((snd, idx) => ({
             id: `snd-${idx}`,
-            type: "audio",
+            type: "sound",
             name: snd.name,
             src: snd.url.startsWith("http")
               ? snd.url
@@ -77,7 +82,7 @@ export const useAssets = (gameName) => {
       if (!gameName || !selectedAsset || !file) return null;
 
       // MP3 파일 검증 (사운드인 경우)
-      if (selectedAsset.type === "audio") {
+      if (selectedAsset.type === "sound") {
         const nameLower = file.name.toLowerCase();
         if (!nameLower.endsWith(".mp3")) {
           throw new Error("사운드 교체는 MP3 파일만 가능합니다.");
@@ -103,9 +108,19 @@ export const useAssets = (gameName) => {
           console.warn("스냅샷 로그 갱신 실패:", snapErr);
         }
 
+        // 4. 게임 데이터도 자동 갱신
+        let gameData = null;
+        try {
+          const gameDataResponse = await getGameData(gameName);
+          gameData = gameDataResponse?.data;
+        } catch (gdErr) {
+          console.warn("게임 데이터 갱신 실패:", gdErr);
+        }
+
         return {
           assets: updatedAssets,
           snapshots: snapshotData?.versions || null,
+          gameData: gameData || null,
         };
       } catch (err) {
         console.error("에셋 교체 실패:", err);
@@ -127,7 +142,7 @@ export const useAssets = (gameName) => {
     loading, // 로딩 상태
     error, // 에러 메시지
     fetchAssets, // 에셋 조회 (assets 배열 반환)
-    replaceAndRefresh, // 에셋 교체 + 자동 갱신 (assets, snapshots 반환)
+    replaceAndRefresh, // 에셋 교체 + 자동 갱신 (assets, snapshots, gameData 반환)
     refreshAssets, // 수동 갱신
   };
 };

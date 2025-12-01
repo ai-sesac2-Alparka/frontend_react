@@ -11,8 +11,9 @@ export const GameProvider = ({ children }) => {
   const [assets, setAssets] = useState([
     { id: 1, type: "image", name: "background", src: "/images/background.svg" },
     { id: 2, type: "image", name: "logo", src: "/images/logo.png" },
-    { id: 3, type: "audio", name: "bgm", src: "" },
+    { id: 3, type: "sound", name: "bgm", src: "" },
   ]);
+  const [assetStamp, setAssetStamp] = useState(Date.now());
 
   return (
     <GameContext.Provider
@@ -25,6 +26,8 @@ export const GameProvider = ({ children }) => {
         setSnapshots,
         assets,
         setAssets,
+        assetStamp,
+        setAssetStamp,
       }}
     >
       {children}

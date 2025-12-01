@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./AssetManager.css";
 import { useGame } from "../../contexts/GameContext";
 import { useAssets } from "../../hooks/useAssets";
@@ -12,6 +12,9 @@ export default function AssetManager({
     assets: contextAssets,
     setAssets,
     setSnapshots,
+    setGameData,
+    assetStamp,
+    setAssetStamp,
   } = useGame();
   const { loading, error, fetchAssets, replaceAndRefresh } =
     useAssets(gameTitle);
@@ -19,22 +22,34 @@ export default function AssetManager({
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [assetStamp, setAssetStamp] = useState(0);
+  const audioRef = useRef(null);
 
   // Context의 assets 사용
   const assets = contextAssets || [];
 
   useEffect(() => {
     if (!gameTitle || !gameTitle.trim()) return;
-    const loadAssets = async () => {
-      const result = await fetchAssets();
-      if (result) {
-        setAssets(result);
-        setAssetStamp(Date.now());
-      }
-    };
-    loadAssets();
-  }, [gameTitle, fetchAssets, setAssets]);
+    // Context에 데이터가 없을 때만 백엔드에서 fetch
+    if (!contextAssets || contextAssets.length === 0) {
+      const loadAssets = async () => {
+        const result = await fetchAssets();
+        if (result) {
+          setAssets(result);
+        }
+      };
+      loadAssets();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameTitle]); // gameTitle만 의존성으로 설정
+
+  // 사운드 에셋 선택 시 자동 재생
+  useEffect(() => {
+    if (selected?.type === "sound" && audioRef.current) {
+      audioRef.current.play().catch((err) => {
+        console.log("자동 재생 실패 (사용자 상호작용 필요):", err);
+      });
+    }
+  }, [selected]);
 
   const open = (asset) => {
     setSelected(asset);
@@ -59,66 +74,68 @@ export default function AssetManager({
       )}
       {loading && <div style={{ padding: 16 }}>로딩 중...</div>}
 
-      <div className="asset-sections-container">
-        {/* 이미지 섹션 */}
-        <section className="asset-section">
-          <h3 className="section-title">이미지</h3>
-          <div className="assets-grid">
-            {assets.filter((a) => a.type === "image").length === 0 && (
-              <div className="empty-message">이미지가 없습니다.</div>
-            )}
-            {assets
-              .filter((a) => a.type === "image")
-              .map((a) => {
-                const stampedSrc = assetStamp
-                  ? `${a.src}?v=${assetStamp}`
-                  : a.src;
-                return (
-                  <div
-                    key={a.id}
-                    className="asset-item"
-                    onClick={() => open(a)}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="asset-preview">
-                      <img src={stampedSrc} alt={a.name} />
+      {!loading && (
+        <div className="asset-sections-container">
+          {/* 이미지 섹션 */}
+          <section className="asset-section">
+            <h3 className="section-title">이미지</h3>
+            <div className="assets-grid">
+              {assets.filter((a) => a.type === "image").length === 0 && (
+                <div className="empty-message">이미지가 없습니다.</div>
+              )}
+              {assets
+                .filter((a) => a.type === "image")
+                .map((a) => {
+                  const stampedSrc = assetStamp
+                    ? `${a.src}?v=${assetStamp}`
+                    : a.src;
+                  return (
+                    <div
+                      key={a.id}
+                      className="asset-item"
+                      onClick={() => open(a)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="asset-preview">
+                        <img src={stampedSrc} alt={a.name} />
+                      </div>
+                      <div className="asset-name">{a.name}</div>
                     </div>
-                    <div className="asset-name">{a.name}</div>
-                  </div>
-                );
-              })}
-          </div>
-        </section>
+                  );
+                })}
+            </div>
+          </section>
 
-        {/* 사운드 섹션 */}
-        <section className="asset-section">
-          <h3 className="section-title">사운드</h3>
-          <div className="assets-grid">
-            {assets.filter((a) => a.type === "audio").length === 0 && (
-              <div className="empty-message">사운드가 없습니다.</div>
-            )}
-            {assets
-              .filter((a) => a.type === "audio")
-              .map((a) => {
-                return (
-                  <div
-                    key={a.id}
-                    className="asset-item"
-                    onClick={() => open(a)}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="asset-preview">
-                      <div className="audio-placeholder">🎵</div>
+          {/* 사운드 섹션 */}
+          <section className="asset-section">
+            <h3 className="section-title">사운드</h3>
+            <div className="assets-grid">
+              {assets.filter((a) => a.type === "sound").length === 0 && (
+                <div className="empty-message">사운드가 없습니다.</div>
+              )}
+              {assets
+                .filter((a) => a.type === "sound")
+                .map((a) => {
+                  return (
+                    <div
+                      key={a.id}
+                      className="asset-item"
+                      onClick={() => open(a)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="asset-preview">
+                        <div className="audio-placeholder">🎵</div>
+                      </div>
+                      <div className="asset-name">{a.name}</div>
                     </div>
-                    <div className="asset-name">{a.name}</div>
-                  </div>
-                );
-              })}
-          </div>
-        </section>
-      </div>
+                  );
+                })}
+            </div>
+          </section>
+        </div>
+      )}
 
       {selected && (
         <div className="asset-modal-overlay" onClick={close}>
@@ -130,11 +147,23 @@ export default function AssetManager({
             <div className="asset-modal-body">
               <div className="asset-modal-preview-large">
                 {selected.type === "image" && selected.src ? (
-                  <img src={selected.src} alt={selected.name} />
-                ) : selected.type === "audio" && selected.src ? (
+                  <img
+                    src={
+                      assetStamp
+                        ? `${selected.src}?v=${assetStamp}`
+                        : selected.src
+                    }
+                    alt={selected.name}
+                  />
+                ) : selected.type === "sound" && selected.src ? (
                   <audio
+                    ref={audioRef}
                     controls
-                    src={selected.src}
+                    src={
+                      assetStamp
+                        ? `${selected.src}?v=${assetStamp}`
+                        : selected.src
+                    }
                     style={{ width: "100%" }}
                   />
                 ) : (
@@ -162,10 +191,13 @@ export default function AssetManager({
                         if (result) {
                           if (result.assets) {
                             setAssets(result.assets);
-                            setAssetStamp(Date.now());
+                            setAssetStamp(Date.now()); // 에셋 교체 시 스탬프 갱신
                           }
                           if (result.snapshots) {
                             setSnapshots(result.snapshots);
+                          }
+                          if (result.gameData) {
+                            setGameData(result.gameData);
                           }
 
                           // 스냅샷 로그 갱신 콜백 (하위 호환성)
@@ -174,7 +206,6 @@ export default function AssetManager({
                           }
                         }
 
-                        alert("에셋이 교체되었습니다.");
                         close();
                       } catch (err) {
                         console.error("replace-asset failed:", err);

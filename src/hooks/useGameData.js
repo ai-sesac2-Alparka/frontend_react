@@ -1,5 +1,10 @@
 import { useState, useCallback } from "react";
-import { getGameData, updateGameData, getSnapshotLog } from "../api/backend";
+import {
+  getGameData,
+  updateGameData,
+  getSnapshotLog,
+  getGameAssets,
+} from "../api/backend";
 
 /**
  * GameData(게임 설정 데이터)를 관리하는 Custom Hook
@@ -67,9 +72,19 @@ export const useGameData = (gameName) => {
           console.warn("스냅샷 로그 갱신 실패:", snapErr);
         }
 
+        // 4. 에셋 데이터도 자동 갱신
+        let assetsData = null;
+        try {
+          const assetsResponse = await getGameAssets(gameName);
+          assetsData = assetsResponse?.data;
+        } catch (assetsErr) {
+          console.warn("에셋 갱신 실패:", assetsErr);
+        }
+
         return {
           gameData: updatedData || null,
           snapshots: snapshotData?.versions || null,
+          assets: assetsData || null,
         };
       } catch (err) {
         console.error("게임 데이터 저장 실패:", err);
@@ -91,7 +106,7 @@ export const useGameData = (gameName) => {
     loading, // 로딩 상태
     error, // 에러 객체
     fetchGameData, // 게임 데이터 조회
-    saveAndRefresh, // 데이터 저장 + 자동 갱신 (gameData, snapshots 반환)
+    saveAndRefresh, // 데이터 저장 + 자동 갱신 (gameData, snapshots, assets 반환)
     refreshGameData, // 수동 갱신
   };
 };
