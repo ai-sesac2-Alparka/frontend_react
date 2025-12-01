@@ -2,7 +2,7 @@
 
 .header {
     width: 100%;
-    height: var(--header-height, 60px); /* fallback height 추가 */
+    height: var(--header-height, 40px); /* slightly reduced header height */
     background: #3A1C6E;
     position: fixed;
     top: 0;
@@ -27,7 +27,7 @@
 }
 
 .logo-image {
-    height: 30px;
+    height: 26px; /* slightly smaller to match reduced header */
     width: auto;
 }
 
@@ -44,7 +44,7 @@
     border-radius: 30px;
     font-family: 'PyeongChangPeace-Bold', var(--font-button);
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     border: 2px solid rgba(255,255,255,0.12);
     transition: all 0.3s ease; /* 부드러운 전환 효과 추가 */
@@ -57,7 +57,7 @@
     border-radius: 30px;
     font-family: 'Gmarket Sans TTF', var(--font-button);
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     border: 2px solid rgba(255,255,255,0.12);
     transition: all 0.3s ease; /* 부드러운 전환 효과 추가 */

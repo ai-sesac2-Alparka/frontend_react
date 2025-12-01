@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import './HomeCreation.css';
@@ -7,6 +7,18 @@ function HomeCreation() {
     const navigate = useNavigate();
     const [selectedGenre, setSelectedGenre] = useState('');
     const [selectedMood, setSelectedMood] = useState('');
+
+    // inject font-face at runtime using PUBLIC_URL to avoid webpack resolving paths in CSS
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.id = 'homecreation-fonts';
+        style.innerHTML = `@font-face { font-family: 'Paperlogy-5'; src: url("${process.env.PUBLIC_URL}/fonts/Paperlogy-5Medium.ttf") format('truetype'); font-weight: 500 700; font-style: normal; font-display: swap; }`;
+        document.head.appendChild(style);
+        return () => {
+            const el = document.getElementById('homecreation-fonts');
+            if (el) el.remove();
+        };
+    }, []);
 
     // 스크롤 함수
     const scrollToGameCreator = () => {
@@ -159,7 +171,7 @@ function HomeCreation() {
                     <h2 className="section-title-fame">명예의 전당</h2>
                     
                     <p className="hall-subtitle">
-                        내가 만든 게임을 다른 사람이 하면 수익이 쌓여요! 💰
+                        최근 가장 인기 있었던 게임이에요!
                     </p>
                     
                     <button className="btn-more" onClick={() => navigate('/arcade')}>

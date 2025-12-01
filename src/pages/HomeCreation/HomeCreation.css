@@ -18,7 +18,7 @@
 }
 
 .hero-logo img {
-    width: 150px;
+    width: 135px; /* slightly smaller */
     height: auto;
     /* animation removed to disable floating logo */
     animation: none;
@@ -27,18 +27,18 @@
 .hero-title {
     font-family: 'HSSanTokki2', var(--font-title);
     font-size: 64px;
-    margin-top: 40px;
-    margin-bottom: 24px;
+    margin-top: 0px; /* moved up */
+    margin-bottom: 20px;
     font-weight: 500; /* 가독성 위해 약간 얇게 조정 */
     text-shadow: 0 6px 18px rgba(0,0,0,0.35); /* 부드러운 그림자 추가 */
 }
 
 .hero-subtitle {
     font-family: 'Paperlogy-5', var(--font-body);
-    font-size: 22px; /* 약간 축소 */
-    line-height: 1.6;
+    font-size: 18px; /* reduced per request */
+    line-height: 1.3;
     opacity: 0.9;
-    margin-bottom: 48px;
+    margin-bottom: 24px;
     font-weight: 500; /* 약간 얇게 */
     letter-spacing: 0.6px; /* 자간 소폭 확대 */
 }
@@ -50,9 +50,10 @@
     border: none;
     border-radius: 50px;
     font-family: 'Paperlogy-7', var(--font-button);
-    font-size: 24px;
+    font-size: 28px; /* increased font size */
     font-weight: 700;
     cursor: pointer;
+    margin-top: 30px; /* nudge CTA downward */
     transition: all 0.3s ease;
     box-shadow: 0 10px 30px rgba(163, 230, 53, 0.3);
 }
@@ -76,8 +77,8 @@
     gap: 24px;
 }
 
-.game-card {
-    background: white;
+.home-creation-page .game-card {
+    background: white !important; /* force white on this page to avoid other stylesheet overrides */
     border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
@@ -101,9 +102,10 @@
 
 .game-card-title {
     font-family: 'Paperlogy-6', var(--font-body);
-    font-size: 18px;
+    font-size: 22px; /* increased size */
     font-weight: 700;
     color: #333;
+    margin-top: 10px; /* nudge title slightly downward */
 }
 
 /* 게임 생성 섹션 */
@@ -140,7 +142,7 @@
 }
 
 .section-title-wrapper img.congrats-right {
-    transform: translateY(-20px);
+    transform: translateY(-120px); /* moved higher as requested */
 }
 
 .creator-box {
@@ -160,7 +162,8 @@
 .option-title {
     font-family: 'HSSanTokki2', var(--font-body);
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 300; /* thinner */
+    letter-spacing: 2px; /* increased tracking */
     margin-bottom: 20px;
     color: white;
 }
@@ -196,14 +199,15 @@
 }
 
 .creator-footer {
-    position: relative;
+    /* match the positioned footer inside .creator-box to keep layout consistent */
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 28px;
+    z-index: 2;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 60px;
-    padding-top: 40px;
-    /* remove border-top and use gradient panel behind */
-    border-top: none;
 }
 
 .order-summary {
@@ -219,8 +223,8 @@
 
 .order-text {
     font-family: 'HSSanTokki2', var(--font-body);
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 32px; /* slightly larger */
+    font-weight: 500; /* slightly thinner */
     color: white;
     padding: 18px 24px;
     border-radius: 20px;
@@ -261,16 +265,9 @@
     color: rgba(255,255,255,0.6);
     border-radius: 12px;
     padding: 12px 20px;
-    box-shadow: inset 0 -6px 0 0 rgba(255,255,255,0.15);
+    box-shadow: inset 0 -6px 0 0 rgba(255,255,255,1); /* underline in full white */
 }
-
-/* show explicit underscores when empty */
-.order-text:empty::after {
-    content: '"____________"';
-    color: rgba(255,255,255,0.95);
-    font-family: 'HSSanTokki2', var(--font-body);
-    font-weight: 700;
-}
+/* removed decorative ::after placeholder - underline now full white */
 
 .btn-create {
     padding: 20px 60px;
@@ -299,16 +296,14 @@
     color: white;
 }
 
-.hall-subtitle {
-    font-family: 'Paperlogy-4', var(--font-body);
-}
+/* unified hall-subtitle will be defined below */
 
 .btn-more {
-    font-family: 'Gmarket Sans TTF', var(--font-button);
+    font-family: 'Paperlogy-7', var(--font-button);
 }
 
 .fame-game-title {
-    font-family: 'Paperlogy-6', var(--font-body);
+    font-family: 'Paperlogy-5', var(--font-body);
 }
 
 .fame-game-author {
@@ -322,15 +317,21 @@
 
 .section-title-fame {
     font-family: var(--font-title);
-    font-size: 48px;
+    font-size: 56px; /* increased size as requested */
     margin-bottom: 16px;
+    font-weight: 400; /* thinner as requested */
+    letter-spacing: 2px; /* increase tracking */
+    text-shadow: 0 6px 18px rgba(0,0,0,0.35); /* subtle shadow */
 }
 
 .hall-subtitle {
-    font-family: var(--font-body);
-    font-size: 20px;
+    font-family: 'Paperlogy-5', var(--font-body);
+    font-size: 22px; /* match hero-subtitle */
+    line-height: 1.6;
     opacity: 0.9;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
+    font-weight: 500; /* match hero-subtitle */
+    letter-spacing: 0.6px; /* match hero-subtitle */
 }
 
 .btn-more {
@@ -339,7 +340,7 @@
     color: white;
     border: 2px solid white;
     border-radius: 50px;
-    font-family: var(--font-button);
+    font-family: 'Paperlogy-7', var(--font-button);
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;
