@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState } from "react";
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const [gameTitle, setGameTitle] = useState("sy_vampire_survivors");
+  const [gameTitle, setGameTitle] = useState("sy_3d_dddd4");
   const [gameData, setGameData] = useState({});
   const [snapshots, setSnapshots] = useState([]);
   const [assets, setAssets] = useState([

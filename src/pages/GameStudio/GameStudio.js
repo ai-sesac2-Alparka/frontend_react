@@ -1,7 +1,7 @@
 // src/pages/GameStudio/GameStudio.js
 
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import SnapshotTree from "../../components/SnapshotTree";
 import DataEditor from "../../components/DataEditor";
@@ -19,6 +19,7 @@ import "./GameStudio.css";
 
 const GameStudio = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const gameFrameRef = useRef(null);
 
   // Context에서 게임 상태 가져오기
@@ -32,6 +33,15 @@ const GameStudio = () => {
     setAssetStamp,
   } = useGame();
 
+  // URL 쿼리 파라미터에서 gameName 읽기 및 Context 업데이트
+  const gameNameFromUrl = searchParams.get("gameName");
+
+  useEffect(() => {
+    if (gameNameFromUrl && gameNameFromUrl !== gameTitle) {
+      setGameTitle(gameNameFromUrl);
+    }
+  }, [searchParams, gameTitle, setGameTitle, gameNameFromUrl]);
+
   // Hook을 통한 데이터 관리
   const { fetchSnapshots } = useSnapshotTree(gameTitle);
   const { fetchGameData } = useGameData(gameTitle);
@@ -42,9 +52,12 @@ const GameStudio = () => {
   // Chat messages are handled inside ChatPanel component now.
   const [isMuted, setIsMuted] = useState(false);
   const chatAddMessageRef = useRef(null);
+  const [gameErrorBatch, setGameErrorBatch] = useState(null);
 
   // 페이지 로드 시 백엔드에서 데이터 불러오기
   useEffect(() => {
+    if (!gameNameFromUrl) return; // 쿼리 없으면 데이터 로드 건너뛰기
+
     const loadInitialData = async () => {
       try {
         // Hook을 통해 스냅샷 로그 불러오기
@@ -73,6 +86,7 @@ const GameStudio = () => {
     loadInitialData();
   }, [
     gameTitle,
+    gameNameFromUrl,
     fetchSnapshots,
     fetchGameData,
     fetchAssets,
@@ -86,6 +100,29 @@ const GameStudio = () => {
     chatAddMessageRef.current = addMessageFn;
   };
 
+  // 쿼리 파라미터가 없으면 안내 화면 표시
+  if (!gameNameFromUrl) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+          gap: "20px",
+          fontFamily: "Paperlogy-5, sans-serif",
+        }}
+      >
+        <h2>게임을 선택해주세요</h2>
+        <p>URL에 게임 이름을 쿼리 파라미터로 전달해주세요.</p>
+        <p style={{ color: "#000000ff", fontSize: "14px" }}>
+          예: /gamestudio?gameName=my_game
+        </p>
+      </div>
+    );
+  }
+
   const handlePromptSubmit = (promptText, asset) => {
     // 포맷된 메시지를 채팅에 추가
     const userMsg = {
@@ -98,9 +135,18 @@ const GameStudio = () => {
       if (chatAddMessageRef.current)
         chatAddMessageRef.current({
           type: "ai",
-          text: "요청을 반영하여 에셋을 업데이트했습니다.",
+          text: `에셋 '${asset?.name ?? ""}' 처리 완료 (샘플 응답)`,
         });
     }, 800);
+  };
+
+  const handleErrorBatch = (batchData) => {
+    console.log("GameStudio에서 에러 배치 수신:", batchData);
+    setGameErrorBatch(batchData);
+  };
+
+  const handleErrorBatchHandled = () => {
+    setGameErrorBatch(null);
   };
 
   // 복사: iframe src를 우선으로, 없으면 현재 페이지 URL을 복사
@@ -180,6 +226,7 @@ const GameStudio = () => {
                 onFullscreen={() => {
                   /* can be used for additional tracking */
                 }}
+                onErrorBatch={handleErrorBatch}
               />
             )}
             {activeTab === "assets" && (
@@ -221,6 +268,8 @@ const GameStudio = () => {
             },
           ]}
           onReady={handleChatReady}
+          gameErrorBatch={gameErrorBatch}
+          onErrorBatchHandled={handleErrorBatchHandled}
         />
       </div>
       {/* asset modal moved to AssetManager component */}
