@@ -27,12 +27,7 @@ function Onboarding() {
                     className="logo-image" 
                 />
             </div>
-            <div className="loading-indicator">
-                <div className="loading-dot"></div>
-                <div className="loading-dot"></div>
-                <div className="loading-dot"></div>
-            </div>
-            <p className="loading-text">로딩 중...</p>
+            {/* loading indicator removed per design request */}
         </div>
     );
 }

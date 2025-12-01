@@ -1,3 +1,5 @@
+// src/App.js
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -22,20 +24,23 @@ import CustomizeStep2 from "./pages/Customize/Step2/CustomizeStep2";
 import GameGenerating from "./pages/GameGenerating/GameGenerating";
 import GameStudio from "./pages/GameStudio/GameStudio";
 import GamePlay from "./pages/GamePlay/GamePlay";
-import MyPage from "./pages/MyPage/MyPage"; // ⭐ MyPage 추가
+import MyPage from "./pages/MyPage/MyPage";
 import Arcade from "./pages/Arcade/Arcade";
+import SignUp from './pages/SignUp/SignUp'; // ✅ 회원가입 추가
+import Login from './pages/Login/Login';    // ✅ 로그인 추가
 
 function App() {
-  // 👇 여기를 true로 하면 "로그인 된 상태" (마이페이지 접근 가능)
-  // 👇 여기를 false로 하면 "로그인 안 된 상태" (마이페이지 접근 불가, 로그인 버튼 보임)
-  const [isLoggedIn] = useState(true);
+  // 👇 현재는 "로그인 안 된 상태(false)"로 설정했습니다.
+  // 나중에 로그인이 되면 이 값을 true로 바꾸게 됩니다.
+  const [isLoggedIn] = useState(false); 
 
-  // 헤더를 포함하는 레이아웃 컴포넌트 (온보딩 제외 모든 페이지용)
+  // 헤더를 포함하는 레이아웃 컴포넌트
+  // (온보딩 페이지를 제외한 모든 페이지에서 헤더가 보입니다)
   const MainLayout = () => {
     return (
       <>
         <Header isLoggedIn={isLoggedIn} />
-        <Outlet /> {/* 각 페이지 컴포넌트가 여기에 렌더링됩니다 */}
+        <Outlet /> {/* 여기에 각 페이지의 내용이 들어갑니다 */}
       </>
     );
   };
@@ -44,42 +49,38 @@ function App() {
     <GameProvider>
       <BrowserRouter>
         <Routes>
-          {/* 1. 온보딩 페이지 (헤더 없음) */}
+          {/* 1. 온보딩 페이지 (헤더 없음, 맨 처음 보이는 화면) */}
           <Route path="/" element={<Onboarding />} />
 
           {/* 2. 헤더가 필요한 페이지들 (MainLayout으로 감쌈) */}
           <Route element={<MainLayout />}>
-            {/* 홈 페이지 */}
+            
+            {/* 메인 및 아케이드 */}
             <Route path="/home" element={<HomeCreation />} />
-
-            {/* 아케이드 페이지 */}
             <Route path="/arcade" element={<Arcade />} />
 
-            {/* 5-1. 템플릿 수정_1 (주문서 작성) */}
+            {/* 인증 관련 (로그인/회원가입) */}
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+
+            {/* 게임 생성 프로세스 */}
             <Route path="/customize/step1" element={<CustomizeStep1 />} />
-
-            {/* 5-2. 템플릿 수정_2 (최종 확인) */}
             <Route path="/customize/step2" element={<CustomizeStep2 />} />
-
-            {/* 6. 게임 생성 중 (로딩 페이지) */}
             <Route path="/game/generating" element={<GameGenerating />} />
 
-            {/* 7. 게임 스튜디오 */}
+            {/* 게임 스튜디오 및 플레이 */}
             <Route path="/studio" element={<GameStudio />} />
-            {/* 호환성을 위한 추가 경로 */}
-            <Route path="/gamestudio" element={<GameStudio />} />
-
-            {/* 8. 플레이 페이지 */}
+            <Route path="/gamestudio" element={<GameStudio />} /> {/* 호환성용 */}
             <Route path="/play/:id" element={<GamePlay />} />
 
-            {/* 9. 마이페이지 (로그인 상태 전달) */}
+            {/* 마이페이지 */}
             <Route
               path="/mypage"
               element={<MyPage isLoggedIn={isLoggedIn} />}
             />
           </Route>
 
-          {/* 404 - 잘못된 경로는 온보딩으로 리다이렉트 */}
+          {/* 3. 잘못된 주소로 들어오면 온보딩('/')으로 되돌려보냄 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

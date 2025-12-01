@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import './HomeCreation.css';
@@ -8,17 +8,7 @@ function HomeCreation() {
     const [selectedGenre, setSelectedGenre] = useState('');
     const [selectedMood, setSelectedMood] = useState('');
 
-    // inject font-face at runtime using PUBLIC_URL to avoid webpack resolving paths in CSS
-    useEffect(() => {
-        const style = document.createElement('style');
-        style.id = 'homecreation-fonts';
-        style.innerHTML = `@font-face { font-family: 'Paperlogy-5'; src: url("${process.env.PUBLIC_URL}/fonts/Paperlogy-5Medium.ttf") format('truetype'); font-weight: 500 700; font-style: normal; font-display: swap; }`;
-        document.head.appendChild(style);
-        return () => {
-            const el = document.getElementById('homecreation-fonts');
-            if (el) el.remove();
-        };
-    }, []);
+    // Fonts are loaded globally in src/index.js to avoid per-page timing issues
 
     // 스크롤 함수
     const scrollToGameCreator = () => {
@@ -42,15 +32,11 @@ function HomeCreation() {
 
     // CREATE 버튼
     const handleCreate = () => {
-        if (!selectedGenre && !selectedMood) {
-            alert('장르나 분위기를 최소 하나 선택해주세요!');
-            return;
-        }
-
-        // Customize 페이지로 이동
+        // Allow proceeding even when no tags are selected. order may be empty.
+        const orderText = [selectedMood, selectedGenre].filter(Boolean).join(' ').trim();
         navigate('/customize/step1', {
             state: {
-                order: `${selectedMood} ${selectedGenre} 게임`,
+                order: orderText ? `${orderText} 게임` : "",
             },
         });
     };
@@ -187,7 +173,6 @@ function HomeCreation() {
                                 <div className="fame-game-info">
                                     <h3 className="fame-game-title">김대리의 월급 루팡</h3>
                                     <p className="fame-game-author">직장인 A</p>
-                                    <div className="fame-game-earnings">+15,400원</div>
                                 </div>
                             </div>
                         ))}
