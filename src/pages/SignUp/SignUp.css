@@ -1,0 +1,206 @@
+/* src/pages/SignUp/SignUp.css */
+
+/* ... (기존 위쪽 코드는 그대로 두거나 덮어쓰기) ... */
+
+.signup-page {
+  background: linear-gradient(
+    180deg,
+    rgba(38, 16, 76, 1) 0%,
+    rgba(124, 58, 237, 1) 100%
+  );
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--header-height, 60px);
+  box-sizing: border-box;
+  overflow-y: auto; /* 세로 스크롤 허용 */
+}
+
+.signup-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px; /* 위아래 여백 좀 더 줌 */
+}
+
+.signup-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.signup-title {
+  font-family: "Paperlogy-7Bold", sans-serif;
+  font-size: 32px;
+  color: #1a0b2e;
+  margin-bottom: 10px;
+}
+
+.signup-subtitle {
+  font-family: "Paperlogy-4Regular", sans-serif;
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.signup-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* 간격 살짝 조정 */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-family: "Paperlogy-6SemiBold", sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.form-group input {
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-family: "Paperlogy-4Regular", sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #7c3aed;
+}
+
+.error-message {
+  color: #ff4d4f;
+  font-size: 14px;
+  text-align: center;
+  font-family: "Paperlogy-4Regular", sans-serif;
+}
+
+.submit-btn {
+  margin-top: 10px;
+  background-color: #7c3aed;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-family: "Paperlogy-7Bold", sans-serif;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #6d28d9;
+}
+
+/* ⭐ 간편가입 섹션 스타일 */
+.social-login-section {
+  width: 100%;
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+/* 구분선 (Divider) */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  font-family: "Paperlogy-4Regular", sans-serif;
+  margin-bottom: 20px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #eee;
+}
+
+.divider span {
+  padding: 0 10px;
+}
+
+/* 소셜 버튼 그룹 */
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-family: "Paperlogy-5Medium", sans-serif; /* Medium 폰트 */
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  position: relative;
+}
+
+.social-btn:hover {
+  opacity: 0.9;
+}
+
+.social-icon {
+  font-weight: bold;
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+/* 구글 버튼 */
+.btn-google {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  color: #333;
+}
+.btn-google .social-icon { color: #EA4335; } /* 구글 레드 */
+
+/* 카카오 버튼 */
+.btn-kakao {
+  background-color: #FEE500; /* 카카오 옐로우 */
+  color: #3C1E1E; /* 카카오 브라운 */
+}
+
+/* 네이버 버튼 */
+.btn-naver {
+  background-color: #03C75A; /* 네이버 그린 */
+  color: white;
+}
+
+/* 로그인 링크 */
+.login-link {
+  margin-top: 25px;
+  font-family: "Paperlogy-4Regular", sans-serif;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-link span {
+  color: #7c3aed;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 5px;
+  text-decoration: underline;
+}
