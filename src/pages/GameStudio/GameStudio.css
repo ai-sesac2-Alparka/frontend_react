@@ -111,6 +111,8 @@
   flex: 1;
   position: relative;
   background-color: black;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* 게임 컨테이너 */
@@ -166,9 +168,10 @@
 
 /* Assets grid */
 .assets-panel {
-  padding: 20px;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* History panel */

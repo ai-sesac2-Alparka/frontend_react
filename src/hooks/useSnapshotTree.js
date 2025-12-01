@@ -3,6 +3,7 @@ import {
   getSnapshotLog,
   restoreGameVersion,
   getGameData,
+  getGameAssets,
 } from "../api/backend";
 
 /**
@@ -77,22 +78,49 @@ export const useSnapshotTree = (gameName) => {
           );
 
           // 3. 게임 데이터도 자동으로 갱신 (스냅샷 복원 후 게임 상태 동기화)
+          let gameData = null;
           try {
-            await getGameData(gameName);
+            const gameDataResponse = await getGameData(gameName);
+            gameData = gameDataResponse?.data;
           } catch (gdErr) {
             console.warn("게임 데이터 갱신 실패:", gdErr);
             // 게임 데이터 갱신 실패해도 스냅샷 복원은 성공으로 처리
           }
 
-          return restoredVersion || null;
+          // 4. 에셋 데이터도 자동으로 갱신
+          let assetsData = null;
+          try {
+            const assetsResponse = await getGameAssets(gameName);
+            assetsData = assetsResponse?.data;
+          } catch (assetsErr) {
+            console.warn("에셋 갱신 실패:", assetsErr);
+            // 에셋 갱신 실패해도 스냅샷 복원은 성공으로 처리
+          }
+
+          return {
+            version: restoredVersion || null,
+            snapshots: data.versions,
+            gameData: gameData,
+            assets: assetsData,
+          };
         } else {
           console.warn("스냅샷 응답 형식이 올바르지 않습니다.");
-          return null;
+          return {
+            version: null,
+            snapshots: [],
+            gameData: null,
+            assets: null,
+          };
         }
       } catch (err) {
         console.error("버전 복원 실패:", err);
         setError(err);
-        return null;
+        return {
+          version: null,
+          snapshots: [],
+          gameData: null,
+          assets: null,
+        };
       } finally {
         setLoading(false);
       }

@@ -9,7 +9,9 @@ import AssetManager from "../../components/AssetManager/AssetManager";
 import ChatPanel from "../../components/ChatPanel/ChatPanel";
 import GameRunner from "../../components/GameRunner/GameRunner";
 import { useGame } from "../../contexts/GameContext";
-import { getSnapshotLog, getGameData } from "../../api/backend";
+import { useSnapshotTree } from "../../hooks/useSnapshotTree";
+import { useGameData } from "../../hooks/useGameData";
+import { useAssets } from "../../hooks/useAssets";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -26,9 +28,14 @@ const GameStudio = () => {
     gameData,
     setGameData,
     setSnapshots,
-    assets,
     setAssets,
+    setAssetStamp,
   } = useGame();
+
+  // Hook을 통한 데이터 관리
+  const { fetchSnapshots } = useSnapshotTree(gameTitle);
+  const { fetchGameData } = useGameData(gameTitle);
+  const { fetchAssets } = useAssets(gameTitle);
 
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
@@ -40,16 +47,23 @@ const GameStudio = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // 스냅샷 로그 불러오기
-        const snapshotResponse = await getSnapshotLog(gameTitle);
-        if (snapshotResponse.data && snapshotResponse.data.versions) {
-          setSnapshots(snapshotResponse.data.versions);
+        // Hook을 통해 스냅샷 로그 불러오기
+        const snapshotData = await fetchSnapshots();
+        if (snapshotData) {
+          setSnapshots(snapshotData);
         }
 
-        // 게임 데이터 불러오기
-        const gameDataResponse = await getGameData(gameTitle);
-        if (gameDataResponse.data) {
-          setGameData(gameDataResponse.data);
+        // Hook을 통해 게임 데이터 불러오기
+        const gameDataResult = await fetchGameData();
+        if (gameDataResult) {
+          setGameData(gameDataResult);
+        }
+
+        // Hook을 통해 에셋 불러오기
+        const assetsResult = await fetchAssets();
+        if (assetsResult) {
+          setAssets(assetsResult);
+          setAssetStamp(Date.now()); // 초기 로드 시 스탬프 갱신
         }
       } catch (error) {
         console.error("데이터 로딩 실패:", error);
@@ -57,7 +71,16 @@ const GameStudio = () => {
     };
 
     loadInitialData();
-  }, [gameTitle, setGameData, setSnapshots]);
+  }, [
+    gameTitle,
+    fetchSnapshots,
+    fetchGameData,
+    fetchAssets,
+    setGameData,
+    setSnapshots,
+    setAssets,
+    setAssetStamp,
+  ]);
 
   const handleChatReady = (addMessageFn) => {
     chatAddMessageRef.current = addMessageFn;
@@ -150,25 +173,30 @@ const GameStudio = () => {
           <div className="tab-content">
             {activeTab === "game" && (
               <GameRunner
-                iframeSrc={"https://e.widgetbot.io/channels/299881420642713600/555776561194762240"}
+                iframeSrc={`http://localhost:8080/${gameTitle}/`}
                 isMuted={isMuted}
                 onToggleMute={() => setIsMuted((m) => !m)}
                 onCopyLink={handleCopyLink}
-                onFullscreen={() => { /* can be used for additional tracking */ }}
+                onFullscreen={() => {
+                  /* can be used for additional tracking */
+                }}
               />
             )}
             {activeTab === "assets" && (
               <div className="assets-panel">
                 <AssetManager
-                  assets={assets}
-                  onAssetsChange={setAssets}
                   onPromptSubmit={handlePromptSubmit}
+                  onSnapshotUpdate={(data) => {
+                    if (data && data.versions) {
+                      setSnapshots(data.versions);
+                    }
+                  }}
                 />
               </div>
             )}
             {activeTab === "history" && (
               <div className="history-panel">
-                <SnapshotTree />
+                <SnapshotTree gameName={gameTitle} showImportExport={false} />
               </div>
             )}
             {activeTab === "data" && (
@@ -177,6 +205,7 @@ const GameStudio = () => {
                   data={gameData}
                   onDataChange={setGameData}
                   gameName={gameTitle}
+                  showImportExport={false}
                 />
               </div>
             )}

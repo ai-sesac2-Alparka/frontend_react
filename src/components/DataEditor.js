@@ -231,8 +231,14 @@ function DataEditor({
   const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Context에서 gameData 가져오기
-  const { gameData: contextGameData } = useGame();
+  // Context에서 gameData 가져오기 및 업데이트 함수
+  const {
+    gameData: contextGameData,
+    setGameData,
+    setSnapshots,
+    setAssets,
+    setAssetStamp,
+  } = useGame();
 
   // Hook 사용: 게임 데이터 관리 (스냅샷 갱신 포함)
   const { saveAndRefresh } = useGameData(gameName);
@@ -286,7 +292,7 @@ function DataEditor({
     URL.revokeObjectURL(url);
   };
 
-  // 저장 실행 핸들러: Hook을 통한 데이터 저장 및 스냅샷 갱신
+  // 저장 실행 핸들러: Hook을 통한 데이터 저장 및 Context 업데이트
   const handleSave = async () => {
     if (isSaving) return;
     if (!gameName || !gameName.trim()) {
@@ -301,7 +307,50 @@ function DataEditor({
       setIsSaving(true);
 
       // Hook을 사용하여 데이터 저장 및 스냅샷 자동 갱신
-      await saveAndRefresh(effectiveData);
+      const result = await saveAndRefresh(effectiveData);
+
+      // Context 업데이트
+      if (result) {
+        if (result.gameData) {
+          setGameData(result.gameData);
+        }
+        if (result.snapshots) {
+          setSnapshots(result.snapshots);
+        }
+        if (result.assets) {
+          // 에셋 데이터를 Context에 맞는 형식으로 변환
+          const backendUrl =
+            process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+          const images = Array.isArray(result.assets.images)
+            ? result.assets.images.map((img, idx) => ({
+                id: `img-${idx}`,
+                type: "image",
+                name: img.name,
+                src: img.url.startsWith("http")
+                  ? img.url
+                  : `${backendUrl}${img.url}`,
+                url: img.url.startsWith("http")
+                  ? img.url
+                  : `${backendUrl}${img.url}`,
+              }))
+            : [];
+          const sounds = Array.isArray(result.assets.sounds)
+            ? result.assets.sounds.map((snd, idx) => ({
+                id: `snd-${idx}`,
+                type: "sound",
+                name: snd.name,
+                src: snd.url.startsWith("http")
+                  ? snd.url
+                  : `${backendUrl}${snd.url}`,
+                url: snd.url.startsWith("http")
+                  ? snd.url
+                  : `${backendUrl}${snd.url}`,
+              }))
+            : [];
+          setAssets([...images, ...sounds]);
+          setAssetStamp(Date.now()); // 데이터 저장 시 스탬프 갱신
+        }
+      }
     } catch (err) {
       console.error("데이터 저장 중 오류:", err);
       alert("저장 중 오류가 발생했습니다.");
