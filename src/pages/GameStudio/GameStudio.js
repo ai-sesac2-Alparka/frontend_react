@@ -171,7 +171,7 @@ const GameStudio = () => {
             )}
             {activeTab === "history" && (
               <div className="history-panel">
-                <SnapshotTree />
+                <SnapshotTree gameName={gameTitle} />
               </div>
             )}
             {activeTab === "data" && (

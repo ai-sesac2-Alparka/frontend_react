@@ -78,8 +78,13 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
 }
 
 export default function SnapshotTree({ gameName, showImportExport = true }) {
-  // Context에서 snapshots 가져오기
-  const { snapshots: contextSnapshots } = useGame();
+  // Context에서 snapshots 가져오기 및 업데이트 함수
+  const {
+    snapshots: contextSnapshots,
+    setSnapshots,
+    setGameData,
+    setAssets,
+  } = useGame();
 
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
   const {
@@ -577,23 +582,74 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
               <button
                 disabled={isApplying}
                 onClick={async () => {
-                  if (!selected) return;
+                  if (!selected) {
+                    console.error("선택된 버전이 없습니다.");
+                    return;
+                  }
+                  console.log("버전 복원 시작:", selected.version);
                   setIsApplying(true);
                   try {
                     // Hook을 사용하여 버전 복원 및 스냅샷 갱신
-                    const restoredVersion = await restoreSnapshot(
-                      selected.version
-                    );
+                    const result = await restoreSnapshot(selected.version);
+                    console.log("복원 결과:", result);
 
-                    if (restoredVersion) {
-                      // 선택된 버전 업데이트 (Hook이 자동으로 게임 데이터도 갱신함)
-                      setSelected(restoredVersion);
+                    if (result?.version) {
+                      // 선택된 버전 업데이트
+                      setSelected(result.version);
+
+                      // Context 업데이트: 스냅샷, 게임 데이터, 에셋
+                      if (result.snapshots) {
+                        console.log(
+                          "스냅샷 업데이트:",
+                          result.snapshots.length
+                        );
+                        setSnapshots(result.snapshots);
+                      }
+                      if (result.gameData) {
+                        console.log("게임 데이터 업데이트");
+                        setGameData(result.gameData);
+                      }
+                      if (result.assets) {
+                        console.log("에셋 업데이트");
+                        // 에셋 데이터를 Context에 맞는 형식으로 변환
+                        const backendUrl =
+                          process.env.REACT_APP_BACKEND_URL ||
+                          "http://localhost:8000";
+                        const images = Array.isArray(result.assets.images)
+                          ? result.assets.images.map((img, idx) => ({
+                              id: `img-${idx}`,
+                              type: "image",
+                              name: img.name,
+                              src: img.url.startsWith("http")
+                                ? img.url
+                                : `${backendUrl}${img.url}`,
+                              url: img.url.startsWith("http")
+                                ? img.url
+                                : `${backendUrl}${img.url}`,
+                            }))
+                          : [];
+                        const sounds = Array.isArray(result.assets.sounds)
+                          ? result.assets.sounds.map((snd, idx) => ({
+                              id: `snd-${idx}`,
+                              type: "audio",
+                              name: snd.name,
+                              src: snd.url.startsWith("http")
+                                ? snd.url
+                                : `${backendUrl}${snd.url}`,
+                              url: snd.url.startsWith("http")
+                                ? snd.url
+                                : `${backendUrl}${snd.url}`,
+                            }))
+                          : [];
+                        setAssets([...images, ...sounds]);
+                      }
                     } else {
-                      console.warn("버전 복원에 실패했습니다.");
+                      console.warn("버전 복원에 실패했습니다. result:", result);
+                      alert("버전 복원에 실패했습니다.");
                     }
                   } catch (err) {
                     console.error("버전 복원 중 오류:", err);
-                    alert("버전 복원 중 오류가 발생했습니다.");
+                    alert("버전 복원 중 오류가 발생했습니다: " + err.message);
                   } finally {
                     setIsApplying(false);
                   }

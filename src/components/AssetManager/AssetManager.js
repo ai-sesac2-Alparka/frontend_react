@@ -1,83 +1,40 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./AssetManager.css";
-import { getGameAssets, replaceAsset, getSnapshotLog } from "../../api/backend";
 import { useGame } from "../../contexts/GameContext";
+import { useAssets } from "../../hooks/useAssets";
 
 export default function AssetManager({
   onPromptSubmit = () => {},
   onSnapshotUpdate = null,
 }) {
-  const { gameTitle, assets, setAssets } = useGame();
+  const {
+    gameTitle,
+    assets: contextAssets,
+    setAssets,
+    setSnapshots,
+  } = useGame();
+  const { loading, error, fetchAssets, replaceAndRefresh } =
+    useAssets(gameTitle);
+
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [assetStamp, setAssetStamp] = useState(0);
-  const fileInputRef = useRef(null);
-  const didFetchRef = useRef(false);
 
-  const fetchAssets = async () => {
-    if (!gameTitle || !gameTitle.trim()) {
-      setAssets([]);
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await getGameAssets(gameTitle);
-      const data = res?.data;
-
-      const backendUrl =
-        process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
-
-      const images = Array.isArray(data?.images)
-        ? data.images.map((img, idx) => ({
-            id: `img-${idx}`,
-            type: "image",
-            name: img.name,
-            src: img.url.startsWith("http")
-              ? img.url
-              : `${backendUrl}${img.url}`,
-            url: img.url.startsWith("http")
-              ? img.url
-              : `${backendUrl}${img.url}`,
-          }))
-        : [];
-
-      const sounds = Array.isArray(data?.sounds)
-        ? data.sounds.map((snd, idx) => ({
-            id: `snd-${idx}`,
-            type: "audio",
-            name: snd.name,
-            src: snd.url.startsWith("http")
-              ? snd.url
-              : `${backendUrl}${snd.url}`,
-            url: snd.url.startsWith("http")
-              ? snd.url
-              : `${backendUrl}${snd.url}`,
-          }))
-        : [];
-
-      setAssets([...images, ...sounds]);
-      setAssetStamp(Date.now());
-    } catch (err) {
-      console.error("Failed to fetch assets:", err);
-      setError("에셋 목록을 불러오지 못했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Context의 assets 사용
+  const assets = contextAssets || [];
 
   useEffect(() => {
     if (!gameTitle || !gameTitle.trim()) return;
-    if (didFetchRef.current) return;
-
-    didFetchRef.current = true;
-    fetchAssets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameTitle]);
+    const loadAssets = async () => {
+      const result = await fetchAssets();
+      if (result) {
+        setAssets(result);
+        setAssetStamp(Date.now());
+      }
+    };
+    loadAssets();
+  }, [gameTitle, fetchAssets, setAssets]);
 
   const open = (asset) => {
     setSelected(asset);
@@ -188,7 +145,6 @@ export default function AssetManager({
                 <label className="upload-label">
                   파일 선택
                   <input
-                    ref={fileInputRef}
                     type="file"
                     className="asset-file-input"
                     accept={
@@ -198,43 +154,34 @@ export default function AssetManager({
                       const file = e.target.files?.[0];
                       if (!file) return;
 
-                      if (selected.type === "audio") {
-                        const nameLower = file.name.toLowerCase();
-                        if (!nameLower.endsWith(".mp3")) {
-                          alert("사운드 교체는 MP3 파일만 가능합니다.");
-                          return;
-                        }
-                      }
-
                       try {
                         setUploading(true);
-                        await replaceAsset(gameTitle, selected, file);
-                        await fetchAssets();
+                        const result = await replaceAndRefresh(selected, file);
 
-                        const newStamp = Date.now();
-                        setAssetStamp(newStamp);
-
-                        // 스냅샷 로그 갱신
-                        try {
-                          if (onSnapshotUpdate) {
-                            const snapRes = await getSnapshotLog(gameTitle);
-                            const data = snapRes?.data;
-                            if (data) onSnapshotUpdate(data);
+                        // Context 업데이트
+                        if (result) {
+                          if (result.assets) {
+                            setAssets(result.assets);
+                            setAssetStamp(Date.now());
                           }
-                        } catch (snapErr) {
-                          console.error(
-                            "Failed to refresh snapshot-log:",
-                            snapErr
-                          );
+                          if (result.snapshots) {
+                            setSnapshots(result.snapshots);
+                          }
+
+                          // 스냅샷 로그 갱신 콜백 (하위 호환성)
+                          if (onSnapshotUpdate && result.snapshots) {
+                            onSnapshotUpdate({ versions: result.snapshots });
+                          }
                         }
 
                         alert("에셋이 교체되었습니다.");
                         close();
                       } catch (err) {
                         console.error("replace-asset failed:", err);
-                        alert("업로드 중 오류가 발생했습니다.");
+                        alert(err.message || "업로드 중 오류가 발생했습니다.");
                       } finally {
                         setUploading(false);
+                        e.target.value = "";
                       }
                     }}
                   />
