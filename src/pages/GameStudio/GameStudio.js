@@ -21,15 +21,8 @@ const GameStudio = () => {
   const gameFrameRef = useRef(null);
 
   // Context에서 게임 상태 가져오기
-  const {
-    gameTitle,
-    setGameTitle,
-    gameData,
-    setGameData,
-    setSnapshots,
-    assets,
-    setAssets,
-  } = useGame();
+  const { gameTitle, setGameTitle, gameData, setGameData, setSnapshots } =
+    useGame();
 
   // Hook을 통한 데이터 관리
   const { fetchSnapshots } = useSnapshotTree(gameTitle);
@@ -167,9 +160,12 @@ const GameStudio = () => {
             {activeTab === "assets" && (
               <div className="assets-panel">
                 <AssetManager
-                  assets={assets}
-                  onAssetsChange={setAssets}
                   onPromptSubmit={handlePromptSubmit}
+                  onSnapshotUpdate={(data) => {
+                    if (data && data.versions) {
+                      setSnapshots(data.versions);
+                    }
+                  }}
                 />
               </div>
             )}
