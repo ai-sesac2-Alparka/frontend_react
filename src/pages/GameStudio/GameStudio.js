@@ -3,8 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import SnapshotTree from "../../components/SnapshotTree";
-import DataEditor from "../../components/DataEditor";
+import SnapshotTree from "../../components/SnapshotTree/SnapshotTree";
+import DataEditor from "../../components/DataEditor/DataEditor";
 import AssetManager from "../../components/AssetManager/AssetManager";
 import ChatPanel from "../../components/ChatPanel/ChatPanel";
 import GameRunner from "../../components/GameRunner/GameRunner";
@@ -253,6 +253,7 @@ const GameStudio = () => {
                   onDataChange={setGameData}
                   gameName={gameTitle}
                   showImportExport={false}
+                  hiddenTopLevelKeys={["assets"]}
                 />
               </div>
             )}

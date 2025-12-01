@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./MediaExplorer.css";
-import { getSnapshotLog, getGameAssets, replaceAsset } from "../api/backend";
+import { getSnapshotLog, getGameAssets, replaceAsset } from "../../api/backend";
 
 /*
   MediaExplorer

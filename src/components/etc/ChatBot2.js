@@ -5,7 +5,7 @@ import {
   submitAnswer,
   submitQnA,
   specQuestion,
-} from "../api/backend";
+} from "../../api/backend";
 
 function ChatBot({ onMarkdownUpdate, gameName }) {
   const [messages, setMessages] = useState([]);

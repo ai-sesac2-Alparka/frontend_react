@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import "./SnapshotTree.css";
-import { useSnapshotTree } from "../hooks/useSnapshotTree";
-import { useGame } from "../contexts/GameContext";
+import { useSnapshotTree } from "../../hooks/useSnapshotTree";
+import { useGame } from "../../contexts/GameContext";
 
 // 버전 배열을 트리(루트들)로 변환
 function buildTree(versions) {
