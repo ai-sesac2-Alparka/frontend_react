@@ -253,7 +253,7 @@ const GameStudio = () => {
                   onDataChange={setGameData}
                   gameName={gameTitle}
                   showImportExport={false}
-                  hiddenTopLevelKeys={['assets']}
+                  hiddenTopLevelKeys={["assets"]}
                 />
               </div>
             )}
