@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import "./DataEditor.css";
-import { useGameData } from "../hooks/useGameData";
-import { useGame } from "../contexts/GameContext";
+import { useGameData } from "../../hooks/useGameData";
+import { useGame } from "../../contexts/GameContext";
 
 /*
   DataEditor: 간단한 key-value JSON 편집기

@@ -6,7 +6,7 @@ import {
   getGameData,
   revertGame,
   processCodeMessage,
-} from "../api/backend";
+} from "../../api/backend";
 
 function ChatBot({
   onMarkdownUpdate,
