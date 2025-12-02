@@ -1,6 +1,7 @@
 /* 전체 페이지 컨테이너 */
 .arcade-page {
-  background-color: #7c3aed; /* 메인 퍼플 배경 */
+  /* 배경을 #3A1C6E -> #7C3AED 선형 그라데이션으로 적용 */
+  background: linear-gradient(180deg, #3A1C6E 0%, #7C3AED 100%);
   min-height: 100vh;
   width: 100%;
   display: flex;
@@ -68,18 +69,19 @@
   position: relative;
   width: auto;
   flex-shrink: 0;
-  background-color: #e1d0ff; /* 연한 보라 */
+  /* sidebar background set to white per request */
+  background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.12);
   padding: 6px 14px;
-  height: 54px;
-  min-height: 54px;
+  height: 44px; /* slightly reduced height */
+  min-height: 44px;
   align-self: flex-start; /* stick to top-left */
-  margin-top: 2px;
-  margin-left: -12px; /* nudge slightly left */
+  margin-top: -70px; /* nudged down slightly */
+  margin-left: -52px; /* moved further left per request */
   border-radius: 28px; /* rounder */
   display: flex;
   align-items: center;
+  justify-content: center; /* center title horizontally */
 }
 
 .sidebar-header {
@@ -93,8 +95,9 @@
   font-family: 'Paperlogy-6', sans-serif;
   font-size: 18px;
   font-weight: 600;
-  margin-left: 8px;
-  color: #000;
+  margin-left: 0;
+  /* sidebar title text set to black per request */
+  color: #000000;
 }
 
 /* search input removed */
@@ -139,13 +142,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-start; /* align children to top-left to match sidebar Y position */
 }
 
 /* 트렌드 배너 (Hero Section) */
 .trend-banner.full-width {
   width: calc(100% + 80px);
   margin-left: -40px; /* align to page edges */
-  background: linear-gradient(90deg, #3a1b6e 0%, #7036d4 100%);
+  background: transparent; /* background removed per request */
   padding: 92px 48px 48px 48px; /* slightly more top padding */
   position: relative;
   display: flex;
@@ -157,29 +161,23 @@
   box-sizing: border-box;
 }
 
-.trend-badge .badge-text {
-  background-color: #a3e635;
-  color: #000;
-  padding: 12px 30px;
-  border-radius: 64px;
-  font-weight: 700;
-  font-size: 20px;
-  font-family: 'Gmarket Sans TTF', 'Gmarket Sans', sans-serif;
-}
-
 .trend-title {
-  font-family: 'HSSanTokki2', sans-serif;
-  font-size: 64px;
-  margin: 44px 0 20px 0; /* increase vertical spacing around title */
+  font-family: 'Paperlogy-7Bold', 'HSSanTokki2', sans-serif;
+  font-size: 96px;
+  margin: 24px 0 8px 0; /* tighten vertical spacing */
   line-height: 1.08;
   letter-spacing: 0.08em;
+  transform: translateY(-16px); /* moved further up per request */
 }
 
 .trend-desc {
   font-size: 18px;
-  margin-bottom: 52px;
+  margin-bottom: 36px;
   opacity: 0.9;
   font-family: 'Paperlogy-4', sans-serif;
+  font-weight: 300; /* lighter */
+  letter-spacing: 0.06em; /* wider letter-spacing */
+  transform: translateY(-6px); /* nudge up slightly */
 }
 
 .trend-game-meta {
@@ -191,13 +189,7 @@
   border-radius: 16px;
 }
 
-.trend-game-meta.trend-meta--wide {
-  gap: 12px;
-  align-items: center;
-  transform: translateX(-56px); /* move further left */
-  min-height: 120px; /* more vertical space */
-  box-shadow: 0 14px 48px rgba(0,0,0,0.28);
-}
+/* .trend-game-meta.trend-meta--wide removed per request */
 
 .trend-game-meta .meta-cta {
   margin-left: 16px;
@@ -289,14 +281,15 @@
   width: 100%;
   max-width: 1100px;
   margin: 0 auto; /* center grid horizontally */
-  transform: translateX(-12px); /* nudge left to appear visually centered */
-  margin-top: -18px; /* move grid up */
+  margin-top: -180px; /* raise grid further up to align with sidebar top */
 }
 
 .game-card {
-  background-color: transparent;
+  background-color: #ffffff; /* set game card background to white */
   cursor: pointer;
   transition: transform 0.2s;
+  border-radius: 15px; /* make card rounded */
+  overflow: hidden; /* ensure thumbnail and content fit card edges */
 }
 
 .game-card:hover {
@@ -307,9 +300,9 @@
   width: 100%;
   aspect-ratio: 1.6; /* 썸네일 비율 */
   background-color: #bbbbbb;
-  border-radius: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border-radius: 0; /* let .game-card control rounded corners */
+  margin-bottom: 0; /* remove gap so top edge aligns with card */
+  box-shadow: none; /* remove thumbnail shadow */
 }
 
 /* Category panel expandable styles */
@@ -333,9 +326,9 @@
 }
 
 .game-info {
-  background-color: #fff;
+  background-color: transparent; /* card background handles visual */
   padding: 15px;
-  border-radius: 15px;
+  border-radius: 0;
 }
 
 .card-title {
@@ -350,17 +343,7 @@
   justify-content: flex-end;
 }
 
-.rating-dots {
-  display: flex;
-  gap: 4px;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  background-color: #000;
-  border-radius: 50%;
-}
+/* rating dots removed per request */
 
 .no-results {
   color: white;

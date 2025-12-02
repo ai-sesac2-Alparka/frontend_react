@@ -5,9 +5,21 @@
     background: #7C3AED;
 }
 
+/* Page-specific override to neutralize global .main-content paddings */
+.home-creation-page > .main-content {
+    padding-left: 0; 
+    padding-right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 /* 메인 콘텐츠 */
 .main-content {
     padding-top: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center child sections horizontally */
 }
 
 /* 히어로 섹션 */
@@ -15,6 +27,15 @@
     padding: 100px 40px;
     text-align: center;
     color: white;
+}
+
+/* Ensure inner content stays centered and doesn't push left */
+.hero-section > .hero-logo,
+.hero-section > .hero-title,
+.hero-section > .hero-subtitle,
+.hero-section > .btn-hero-cta {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hero-logo img {
@@ -69,6 +90,10 @@
     padding: 60px 40px;
 }
 
+.game-showcase .game-showcase-grid {
+    justify-items: center; /* center grid cells */
+}
+
 .game-showcase-grid {
     max-width: 1200px;
     margin: 0 auto;
@@ -114,6 +139,11 @@
     /* background removed to eliminate dark box */
     background: transparent;
     scroll-margin-top: 80px;
+}
+
+.game-creator-section .creator-box {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .section-title-creator {
@@ -298,6 +328,11 @@
     padding: 80px 40px;
     text-align: center;
     color: white;
+}
+
+.hall-of-fame > .fame-games-grid {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* unified hall-subtitle will be defined below */

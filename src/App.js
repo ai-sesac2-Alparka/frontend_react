@@ -66,7 +66,6 @@ function App() {
             {/* 게임 생성 프로세스 */}
             <Route path="/customize/step1" element={<CustomizeStep1 />} />
             <Route path="/customize/step2" element={<CustomizeStep2 />} />
-            <Route path="/game/generating" element={<GameGenerating />} />
 
             {/* 게임 스튜디오 및 플레이 */}
             <Route path="/studio" element={<GameStudio />} />
@@ -79,6 +78,9 @@ function App() {
               element={<MyPage isLoggedIn={isLoggedIn} />}
             />
           </Route>
+
+          {/* GameGenerating 페이지는 헤더를 숨기기 위해 MainLayout 밖으로 둡니다 */}
+          <Route path="/game/generating" element={<GameGenerating />} />
 
           {/* 3. 잘못된 주소로 들어오면 온보딩('/')으로 되돌려보냄 */}
           <Route path="*" element={<Navigate to="/" replace />} />

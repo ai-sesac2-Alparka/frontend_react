@@ -138,7 +138,7 @@ const SignUp = () => {
           </div>
 
           <p className="login-link">
-            이미 계정이 있으신가요? <span onClick={() => navigate("/")}>로그인하기</span>
+            이미 계정이 있으신가요? <span onClick={() => navigate("/login")}>로그인하기</span>
           </p>
         </div>
       </div>

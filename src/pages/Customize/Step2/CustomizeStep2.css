@@ -21,7 +21,7 @@
   width: 100%;
   height: 100%;
   padding: 20px 40px;
-  gap: 40px; /* 좌우 패널 사이 간격 */
+  gap: 0px; /* minimize gap per user request */
   box-sizing: border-box;
 }
 
@@ -37,7 +37,7 @@
   background-color: #ffffff;
   box-shadow: 10px 10px 4px rgba(0, 0, 0, 0.25);
   width: 100%;
-  max-width: 600px; /* 너무 넓어지지 않게 제한 */
+  max-width: 520px; /* cap width so card appears narrower */
   height: 90%;      /* 화면 높이에 맞춰 꽉 차게 */
   position: relative;
   border-radius: 20px;
@@ -45,13 +45,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 auto; /* center within panel */
+  transform: translateX(36px); /* nudge more toward center without changing size */
 }
 
 /* 뒤로가기 버튼 */
 .back-btn-wrapper {
   position: absolute;
-  top: 30px;
-  left: 30px;
+  /* place near the create button at the bottom-left side */
+  top: auto;
+  left: auto;
+  bottom: 40px;
+  /* align left of centered create-btn (create-btn width is 60%) */
+  left: calc(50% - 30% - 64px);
   width: 56px; /* match submit-button size */
   height: 56px;
   background: #3A1C6E; /* use submit-button background */
@@ -70,7 +76,7 @@
 .polygon {
   width: 0;
   height: 0;
-  /* bigger right-pointing triangle */
+  /* right-pointing triangle for back button */
   border-top: 12px solid transparent;
   border-bottom: 12px solid transparent;
   border-right: 18px solid #ffffff;
@@ -87,13 +93,7 @@
   margin-bottom: 10px;
 }
 
-.panel-subtitle {
-  font-family: "HSSanTokki2.0", sans-serif;
-  font-size: 20px;
-  color: #555; /* 흰 배경이라 색상 변경 */
-  margin-bottom: 30px;
-  font-weight: normal;
-}
+
 
 .order-display-area {
   background-color: #EDEDED;
@@ -118,16 +118,16 @@
 .warning-text {
   font-family: "Paperlogy-2ExtraLight", sans-serif;
   font-size: 16px;
-  color: #888;
+  color: #303030; /* user requested darker color */
   margin-bottom: 20px;
 }
 
 /* 생성 버튼 */
 .create-btn {
   background-color: #A3E635;
-  width: 80%;
-  height: 70px;
-  border-radius: 35px;
+  width: 60%;
+  height: 56px; /* match back-btn-wrapper height */
+  border-radius: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,7 +142,7 @@
 
 .btn-text {
   font-family: "PyeongChangPeace-Bold", sans-serif;
-  font-size: 24px;
+  font-size: 23px;
   color: #000;
 }
 
@@ -159,13 +159,15 @@
   background-color: rgba(225, 208, 255, 0.9); /* #e1d0ffcc */
   box-shadow: 10px 10px 4px rgba(0, 0, 0, 0.25);
   width: 100%;
-  max-width: 550px;
+  max-width: 520px;
   height: 90%; /* 왼쪽과 높이 맞춤 */
   border-radius: 20px;
   padding: 40px 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 auto; /* center within panel */
+  transform: translateX(-36px); /* nudge more toward center without changing size */
 }
 
 .panel-title-right {
