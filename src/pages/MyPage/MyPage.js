@@ -1,8 +1,8 @@
 // src/pages/MyPage/MyPage.js
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './MyPage.css';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import "./MyPage.css";
 
 // 프로필 이미지 (없으면 public/images/alpaca.png 사용)
 const profileImage = "/images/alpaca.png";
@@ -11,12 +11,12 @@ const MyPage = ({ isLoggedIn }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("created"); // created, liked, recent
   // 사용자명 인라인 편집 상태
-  const [userName, setUserName] = useState('알파카 장인');
+  const [userName, setUserName] = useState("알파카 장인");
   const [isEditingName, setIsEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState('');
+  const [nameInput, setNameInput] = useState("");
   // user-bio will show number of created games by default; make editable
-  const [userBio, setUserBio] = useState('');
-  const [bioInput, setBioInput] = useState('');
+  const [userBio, setUserBio] = useState("");
+  const [bioInput, setBioInput] = useState("");
   // profile image editable state (preview URL)
   const [profileImageUrl, setProfileImageUrl] = useState(profileImage);
   const hiddenFileInputRef = useRef(null);
@@ -27,11 +27,11 @@ const MyPage = ({ isLoggedIn }) => {
     // - 개발 모드일 때 자동 허용
     // - 또는 URL에 ?dev=true 쿼리 파라미터가 있으면 강제 허용
     const urlParams = new URLSearchParams(window.location.search);
-    const devOverride = urlParams.get('dev') === 'true';
+    const devOverride = urlParams.get("dev") === "true";
 
-    if (!isLoggedIn && !devOverride && process.env.NODE_ENV !== 'development') {
+    if (!isLoggedIn && !devOverride && process.env.NODE_ENV !== "development") {
       alert("로그인이 필요한 페이지입니다.");
-      navigate('/');
+      navigate("/");
     }
   }, [isLoggedIn, navigate]);
 
@@ -39,19 +39,23 @@ const MyPage = ({ isLoggedIn }) => {
   const generateDummyGames = (count, type) => {
     return Array.from({ length: count }).map((_, i) => ({
       id: `${type}-game-${i + 1}`,
-      game_title: `${type === 'created' ? '나의' : type === 'liked' ? '찜한' : '최근'} 게임 ${i + 1}`,
-      thumbnail: `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Game+${i + 1}`, // 임시 이미지
-      author: 'Creator',
-      category: 'action',
-      plays: Math.floor(Math.random() * 10000)
+      game_title: `${
+        type === "created" ? "나의" : type === "liked" ? "찜한" : "최근"
+      } 게임 ${i + 1}`,
+      thumbnail: `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Game+${
+        i + 1
+      }`, // 임시 이미지
+      author: "Creator",
+      category: "action",
+      plays: Math.floor(Math.random() * 10000),
     }));
   };
 
   // 탭별 데이터
   const games = {
-    created: generateDummyGames(5, 'created'),
-    liked: generateDummyGames(8, 'liked'),
-    recent: generateDummyGames(3, 'recent')
+    created: generateDummyGames(5, "created"),
+    liked: generateDummyGames(8, "liked"),
+    recent: generateDummyGames(3, "recent"),
   };
 
   // 초기 bio는 '만든 게임 수'로 설정
@@ -94,7 +98,7 @@ const MyPage = ({ isLoggedIn }) => {
               type="file"
               accept="image/*"
               ref={(el) => (hiddenFileInputRef.current = el)}
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={(e) => {
                 const file = e.target.files && e.target.files[0];
                 if (file) {
@@ -139,7 +143,8 @@ const MyPage = ({ isLoggedIn }) => {
                     const file = e.target.files && e.target.files[0];
                     if (file) {
                       const reader = new FileReader();
-                      reader.onload = (ev) => setProfileImageUrl(ev.target.result);
+                      reader.onload = (ev) =>
+                        setProfileImageUrl(ev.target.result);
                       reader.readAsDataURL(file);
                     }
                   }}
@@ -164,7 +169,7 @@ const MyPage = ({ isLoggedIn }) => {
                 }
               }}
             >
-              {isEditingName ? '변경사항 저장' : '프로필 편집'}
+              {isEditingName ? "변경사항 저장" : "프로필 편집"}
             </button>
           </div>
         </div>
@@ -174,21 +179,21 @@ const MyPage = ({ isLoggedIn }) => {
       <section className="content-section">
         {/* 탭 메뉴 */}
         <div className="tab-menu">
-          <button 
-            className={`tab-btn ${activeTab === 'created' ? 'active' : ''}`}
-            onClick={() => setActiveTab('created')}
+          <button
+            className={`tab-btn ${activeTab === "created" ? "active" : ""}`}
+            onClick={() => setActiveTab("created")}
           >
             🕹️ 내가 만든 게임
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'liked' ? 'active' : ''}`}
-            onClick={() => setActiveTab('liked')}
+          <button
+            className={`tab-btn ${activeTab === "liked" ? "active" : ""}`}
+            onClick={() => setActiveTab("liked")}
           >
             💖 찜한 리스트
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`}
-            onClick={() => setActiveTab('recent')}
+          <button
+            className={`tab-btn ${activeTab === "recent" ? "active" : ""}`}
+            onClick={() => setActiveTab("recent")}
           >
             🕒 최근 플레이
           </button>
@@ -198,9 +203,9 @@ const MyPage = ({ isLoggedIn }) => {
         <div className="game-grid-container">
           <div className="section-header">
             <h3>
-              {activeTab === 'created' && "내가 만든 게임"}
-              {activeTab === 'liked' && "찜한 게임 리스트"}
-              {activeTab === 'recent' && "최근에 플레이한 게임"}
+              {activeTab === "created" && "내가 만든 게임"}
+              {activeTab === "liked" && "찜한 게임 리스트"}
+              {activeTab === "recent" && "최근에 플레이한 게임"}
               <span className="count">({games[activeTab].length})</span>
             </h3>
             <button className="view-all-btn">모두 보기 ›</button>
@@ -210,10 +215,16 @@ const MyPage = ({ isLoggedIn }) => {
             {games[activeTab].length > 0 ? (
               <>
                 {games[activeTab].map((game) => (
-                  <div key={game.id} className="game-card" onClick={() => navigate(`/play/${game.id}`)}>
+                  <div
+                    key={game.id}
+                    className="game-card"
+                    onClick={() => navigate(`/play/${game.id}`)}
+                  >
                     <div className="card-thumbnail">
                       {/* 실제 이미지 대신 플레이스홀더 사용 */}
-                      <div className="thumbnail-placeholder">{game.type === 'created' ? '🎮' : '👾'}</div>
+                      <div className="thumbnail-placeholder">
+                        {game.type === "created" ? "🎮" : "👾"}
+                      </div>
                     </div>
                     <div className="card-info">
                       <h4 className="card-title">{game.game_title}</h4>
@@ -225,8 +236,11 @@ const MyPage = ({ isLoggedIn }) => {
                   </div>
                 ))}
                 {/* '만들기' 탭일 때 추가 버튼 표시 */}
-                {activeTab === 'created' && (
-                  <div className="game-card add-new" onClick={() => navigate('/home')}>
+                {activeTab === "created" && (
+                  <div
+                    className="game-card add-new"
+                    onClick={() => navigate("/home")}
+                  >
                     <div className="add-icon">+</div>
                     <p>새로운 게임 만들기</p>
                   </div>
