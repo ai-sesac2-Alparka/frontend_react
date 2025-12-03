@@ -12,6 +12,7 @@ import { useGame } from "../../contexts/GameContext";
 import { useSnapshotTree } from "../../hooks/useSnapshotTree";
 import { useGameData } from "../../hooks/useGameData";
 import { useAssets } from "../../hooks/useAssets";
+import { changeGameTitle, getGameTitle } from "../../api/backend";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -24,8 +25,10 @@ const GameStudio = () => {
 
   // Context에서 게임 상태 가져오기
   const {
-    gameTitle,
-    setGameTitle,
+    gameName,
+    setGameName,
+    displayTitle,
+    setDisplayTitle,
     gameData,
     setGameData,
     setSnapshots,
@@ -37,15 +40,26 @@ const GameStudio = () => {
   const gameNameFromUrl = searchParams.get("gameName");
 
   useEffect(() => {
-    if (gameNameFromUrl && gameNameFromUrl !== gameTitle) {
-      setGameTitle(gameNameFromUrl);
+    if (gameNameFromUrl && gameNameFromUrl !== gameName) {
+      setGameName(gameNameFromUrl);
+      // displayTitle은 게임 데이터에서 로드되거나 사용자가 입력
+      if (!displayTitle) {
+        setDisplayTitle(gameNameFromUrl); // 초기값으로 ID 사용
+      }
     }
-  }, [searchParams, gameTitle, setGameTitle, gameNameFromUrl]);
+  }, [
+    searchParams,
+    gameName,
+    setGameName,
+    displayTitle,
+    setDisplayTitle,
+    gameNameFromUrl,
+  ]);
 
-  // Hook을 통한 데이터 관리
-  const { fetchSnapshots } = useSnapshotTree(gameTitle);
-  const { fetchGameData } = useGameData(gameTitle);
-  const { fetchAssets } = useAssets(gameTitle);
+  // Hook을 통한 데이터 관리 (gameName을 서버 통신에 사용)
+  const { fetchSnapshots } = useSnapshotTree(gameName);
+  const { fetchGameData } = useGameData(gameName);
+  const { fetchAssets } = useAssets(gameName);
 
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
@@ -54,6 +68,7 @@ const GameStudio = () => {
   const chatAddMessageRef = useRef(null);
   const [gameErrorBatch, setGameErrorBatch] = useState(null);
   const [reloadToken, setReloadToken] = useState(0); // 게임 iframe 리로드용
+  const [isEditingTitle, setIsEditingTitle] = useState(false); // 타이틀 수정 모드
 
   // 페이지 로드 시 백엔드에서 데이터 불러오기
   useEffect(() => {
@@ -61,6 +76,17 @@ const GameStudio = () => {
 
     const loadInitialData = async () => {
       try {
+        // 게임 타이틀 조회
+        try {
+          const titleResponse = await getGameTitle(gameNameFromUrl);
+          const title = titleResponse?.data?.title || titleResponse?.data;
+          if (title && typeof title === "string") {
+            setDisplayTitle(title);
+          }
+        } catch (titleError) {
+          console.warn("게임 타이틀 로드 실패:", titleError);
+        }
+
         // Hook을 통해 스냅샷 로그 불러오기
         const snapshotData = await fetchSnapshots();
         if (snapshotData) {
@@ -86,7 +112,7 @@ const GameStudio = () => {
 
     loadInitialData();
   }, [
-    gameTitle,
+    gameName,
     gameNameFromUrl,
     fetchSnapshots,
     fetchGameData,
@@ -95,10 +121,28 @@ const GameStudio = () => {
     setSnapshots,
     setAssets,
     setAssetStamp,
+    setDisplayTitle,
   ]);
 
   const handleChatReady = (addMessageFn) => {
     chatAddMessageRef.current = addMessageFn;
+  };
+
+  // 타이틀 변경 확인 처리
+  const handleTitleEditConfirm = async () => {
+    if (!gameName || !displayTitle.trim()) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    try {
+      await changeGameTitle(gameName, displayTitle.trim());
+      console.log("타이틀 변경 성공:", displayTitle);
+      setIsEditingTitle(false);
+    } catch (error) {
+      console.error("타이틀 변경 실패:", error);
+      alert("타이틀 변경에 실패했습니다.");
+    }
   };
 
   // 쿼리 파라미터가 없으면 안내 화면 표시
@@ -189,9 +233,23 @@ const GameStudio = () => {
           <input
             type="text"
             className="game-title-input"
-            value={gameTitle}
-            onChange={(e) => setGameTitle(e.target.value)}
+            value={displayTitle}
+            onChange={(e) => setDisplayTitle(e.target.value)}
+            placeholder="게임 타이틀을 입력하세요"
+            readOnly={!isEditingTitle}
           />
+          <button
+            className={`btn-edit-title ${isEditingTitle ? "editing" : ""}`}
+            onClick={() => {
+              if (isEditingTitle) {
+                handleTitleEditConfirm();
+              } else {
+                setIsEditingTitle(true);
+              }
+            }}
+          >
+            {isEditingTitle ? "✓" : "✏️"}
+          </button>
         </div>
         <div className="header-right">
           <button className="btn-secondary">임시 저장</button>
@@ -224,7 +282,7 @@ const GameStudio = () => {
           <div className="tab-content">
             {activeTab === "game" && (
               <GameRunner
-                iframeSrc={`http://localhost:8080/${gameTitle}/`}
+                iframeSrc={`http://localhost:8080/${gameName}/`}
                 isMuted={isMuted}
                 onToggleMute={() => setIsMuted((m) => !m)}
                 onCopyLink={handleCopyLink}
@@ -249,7 +307,7 @@ const GameStudio = () => {
             )}
             {activeTab === "history" && (
               <div className="history-panel">
-                <SnapshotTree gameName={gameTitle} showImportExport={false} />
+                <SnapshotTree gameName={gameName} showImportExport={false} />
               </div>
             )}
             {activeTab === "data" && (
@@ -257,7 +315,7 @@ const GameStudio = () => {
                 <DataEditor
                   data={gameData}
                   onDataChange={setGameData}
-                  gameName={gameTitle}
+                  gameName={gameName}
                   showImportExport={false}
                   hiddenTopLevelKeys={["assets"]}
                 />

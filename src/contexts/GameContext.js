@@ -5,7 +5,8 @@ import React, { createContext, useContext, useState } from "react";
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const [gameTitle, setGameTitle] = useState("sy_3d_dddd4");
+  const [gameName, setGameName] = useState(""); // 고유 ID (서버 통신용)
+  const [displayTitle, setDisplayTitle] = useState(""); // 사용자가 보는 게임 타이틀
   const [gameData, setGameData] = useState({});
   const [snapshots, setSnapshots] = useState([]);
   const [assets, setAssets] = useState([
@@ -18,8 +19,10 @@ export const GameProvider = ({ children }) => {
   return (
     <GameContext.Provider
       value={{
-        gameTitle,
-        setGameTitle,
+        gameName,
+        setGameName,
+        displayTitle,
+        setDisplayTitle,
         gameData,
         setGameData,
         snapshots,

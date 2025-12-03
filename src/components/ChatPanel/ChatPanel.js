@@ -18,13 +18,13 @@ export default function ChatPanel({
   onErrorBatchHandled = null,
   onGameReload = null,
 }) {
-  const { gameTitle, setGameData, setSnapshots, setAssets, setAssetStamp } =
+  const { gameName, setGameData, setSnapshots, setAssets, setAssetStamp } =
     useGame();
 
   // Hooks 사용 - 각 탭의 데이터를 갱신하기 위해
-  const { fetchSnapshots } = useSnapshotTree(gameTitle);
-  const { fetchGameData } = useGameData(gameTitle);
-  const { fetchAssets } = useAssets(gameTitle);
+  const { fetchSnapshots } = useSnapshotTree(gameName);
+  const { fetchGameData } = useGameData(gameName);
+  const { fetchAssets } = useAssets(gameName);
 
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
@@ -52,10 +52,10 @@ export default function ChatPanel({
   // 페이지 로드 시 채팅 이력 불러오기
   useEffect(() => {
     const loadChatHistory = async () => {
-      if (!gameTitle) return;
+      if (!gameName) return;
 
       try {
-        const response = await getChat(gameTitle);
+        const response = await getChat(gameName);
         const chatData = response?.data?.chat;
 
         if (Array.isArray(chatData) && chatData.length > 0) {
@@ -72,7 +72,7 @@ export default function ChatPanel({
     };
 
     loadChatHistory();
-  }, [gameTitle]);
+  }, [gameName]);
 
   // 게임 에러 배치가 들어오면 메시지 추가
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function ChatPanel({
 
     const sendError = async () => {
       try {
-        await sendErrorBatch(gameTitle, gameErrorBatch);
+        await sendErrorBatch(gameName, gameErrorBatch);
         console.log("✅ FastAPI 서버로 에러 전송 성공");
       } catch (error) {
         console.error("❌ FastAPI 서버로 에러 전송 실패:", error);
@@ -104,11 +104,11 @@ export default function ChatPanel({
     };
 
     sendError();
-  }, [gameErrorBatch, onErrorBatchHandled, gameTitle]);
+  }, [gameErrorBatch, onErrorBatchHandled, gameName]);
 
   // 공통: 스냅샷 로그 및 게임 데이터, 에셋 최신화 (Hook 사용)
   const refreshAllData = async () => {
-    if (!gameTitle) return;
+    if (!gameName) return;
 
     try {
       // 1. 스냅샷 로그 갱신
@@ -149,7 +149,7 @@ export default function ChatPanel({
 
   const handleRevert = async () => {
     try {
-      const response = await revertGame(gameTitle);
+      const response = await revertGame(gameName);
 
       const botMessage = {
         text: response.data.reply || "이전 상태로 되돌렸습니다.",
@@ -178,7 +178,7 @@ export default function ChatPanel({
     setMessages((prev) => [...prev, tempBotMessage]);
 
     try {
-      const response = await processCodeMessage(messageText, gameTitle);
+      const response = await processCodeMessage(messageText, gameName);
 
       if (response.data.status === "success") {
         setMessages((prev) =>

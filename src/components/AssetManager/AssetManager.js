@@ -8,7 +8,7 @@ export default function AssetManager({
   onSnapshotUpdate = null,
 }) {
   const {
-    gameTitle,
+    gameName,
     assets: contextAssets,
     setAssets,
     setSnapshots,
@@ -17,7 +17,7 @@ export default function AssetManager({
     setAssetStamp,
   } = useGame();
   const { loading, error, fetchAssets, replaceAndRefresh } =
-    useAssets(gameTitle);
+    useAssets(gameName);
 
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState("");
@@ -28,7 +28,7 @@ export default function AssetManager({
   const assets = contextAssets || [];
 
   useEffect(() => {
-    if (!gameTitle || !gameTitle.trim()) return;
+    if (!gameName || !gameName.trim()) return;
     // Context에 데이터가 없을 때만 백엔드에서 fetch
     if (!contextAssets || contextAssets.length === 0) {
       const loadAssets = async () => {
@@ -40,7 +40,7 @@ export default function AssetManager({
       loadAssets();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameTitle]); // gameTitle만 의존성으로 설정
+  }, [gameName]); // gameName만 의존성으로 설정
 
   // 사운드 에셋 선택 시 자동 재생
   useEffect(() => {

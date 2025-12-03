@@ -161,3 +161,33 @@ export const specQuestion = (gameName, message) => {
     message,
   });
 };
+
+/**
+ * 게임 타이틀 조회
+ * @param {string} gameName - 게임 고유 ID
+ * @returns {Promise} Axios response
+ */
+export const getGameTitle = (gameName) => {
+  return backendApi.get("/get-game-title", {
+    params: {
+      game_name: gameName || "",
+      _t: Date.now(), // 캐시 방지
+    },
+    headers: {
+      "Cache-Control": "no-cache",
+    },
+  });
+};
+
+/**
+ * 게임 타이틀 변경 요청
+ * @param {string} gameName - 게임 고유 ID
+ * @param {string} newTitle - 새로운 게임 타이틀
+ * @returns {Promise} Axios response
+ */
+export const changeGameTitle = (gameName, newTitle) => {
+  return backendApi.post("/change-game-title", {
+    game_name: gameName,
+    new_title: newTitle,
+  });
+};
