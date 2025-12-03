@@ -74,17 +74,17 @@ function HomeCreation() {
                 <section className="game-showcase">
                     <div className="game-showcase-grid">
                         {[
-                            { title: '테트리스', image: 'https://placehold.co/257x301' },
-                            { title: '갤러그', image: 'https://placehold.co/257x301' },
-                            { title: '지뢰 찾기', image: 'https://placehold.co/257x301' },
-                            { title: '점프맵', image: 'https://placehold.co/257x301' }
+                            { id: 'showcase-1', game_title: '테트리스', thumbnail: 'https://placehold.co/257x301', author: 'Classic Games', category: 'puzzle', plays: 50000 },
+                            { id: 'showcase-2', game_title: '갤러그', thumbnail: 'https://placehold.co/257x301', author: 'Retro Games', category: 'shooting', plays: 45000 },
+                            { id: 'showcase-3', game_title: '지뢰 찾기', thumbnail: 'https://placehold.co/257x301', author: 'Puzzle Master', category: 'puzzle', plays: 30000 },
+                            { id: 'showcase-4', game_title: '점프맵', thumbnail: 'https://placehold.co/257x301', author: 'Action Dev', category: 'action', plays: 25000 }
                         ].map((game, index) => (
-                            <div key={index} className="game-card" onClick={() => navigate('/play/1')}>
+                            <div key={game.id} className="game-card" onClick={() => navigate(`/play/${game.id}`)}>
                                 <div className="game-card-image">
-                                    <img src={game.image} alt={game.title} />
+                                    <img src={game.thumbnail} alt={game.game_title} />
                                 </div>
                                 <div className="game-card-info">
-                                    <h3 className="game-card-title">{game.title}</h3>
+                                    <h3 className="game-card-title">{game.game_title}</h3>
                                 </div>
                             </div>
                         ))}

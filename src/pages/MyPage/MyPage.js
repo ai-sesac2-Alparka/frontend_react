@@ -38,10 +38,12 @@ const MyPage = ({ isLoggedIn }) => {
   // 더미 데이터 생성기
   const generateDummyGames = (count, type) => {
     return Array.from({ length: count }).map((_, i) => ({
-      id: i,
-      title: `${type === 'created' ? '나의' : type === 'liked' ? '찜한' : '최근'} 게임 ${i + 1}`,
-      image: `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Game+${i + 1}`, // 임시 이미지
-      type: type
+      id: `${type}-game-${i + 1}`,
+      game_title: `${type === 'created' ? '나의' : type === 'liked' ? '찜한' : '최근'} 게임 ${i + 1}`,
+      thumbnail: `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Game+${i + 1}`, // 임시 이미지
+      author: 'Creator',
+      category: 'action',
+      plays: Math.floor(Math.random() * 10000)
     }));
   };
 
@@ -214,7 +216,7 @@ const MyPage = ({ isLoggedIn }) => {
                       <div className="thumbnail-placeholder">{game.type === 'created' ? '🎮' : '👾'}</div>
                     </div>
                     <div className="card-info">
-                      <h4 className="card-title">{game.title}</h4>
+                      <h4 className="card-title">{game.game_title}</h4>
                       <div className="card-meta">
                         <span>Arcade</span>
                         <span>⭐ 4.5</span>
