@@ -2,6 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  getUserCreatedGames,
+  getUserLikedGames,
+  getUserRecentGames,
+} from "../../api/arcade";
 import "./MyPage.css";
 
 // 프로필 이미지 (없으면 public/images/alpaca.png 사용)
@@ -35,28 +40,51 @@ const MyPage = ({ isLoggedIn }) => {
     }
   }, [isLoggedIn, navigate]);
 
-  // 더미 데이터 생성기
-  const generateDummyGames = (count, type) => {
-    return Array.from({ length: count }).map((_, i) => ({
-      id: `${type}-game-${i + 1}`,
-      game_title: `${
-        type === "created" ? "나의" : type === "liked" ? "찜한" : "최근"
-      } 게임 ${i + 1}`,
-      thumbnail: `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Game+${
-        i + 1
-      }`, // 임시 이미지
-      author: "Creator",
-      category: "action",
-      plays: Math.floor(Math.random() * 10000),
-    }));
-  };
+  const [games, setGames] = useState({
+    created: [],
+    liked: [],
+    recent: [],
+  });
+  const [loading, setLoading] = useState(true);
 
-  // 탭별 데이터
-  const games = {
-    created: generateDummyGames(5, "created"),
-    liked: generateDummyGames(8, "liked"),
-    recent: generateDummyGames(3, "recent"),
-  };
+  const backendUrl =
+    process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+
+  // API에서 게임 목록 불러오기
+  useEffect(() => {
+    const fetchAllGames = async () => {
+      setLoading(true);
+      try {
+        const [createdRes, likedRes, recentRes] = await Promise.all([
+          getUserCreatedGames("sy"),
+          getUserLikedGames("sy"),
+          getUserRecentGames("sy"),
+        ]);
+
+        const processGames = (gamesData) => {
+          return (gamesData || []).map((game) => ({
+            ...game,
+            thumbnail: game.thumbnail?.startsWith("http")
+              ? game.thumbnail
+              : `${backendUrl}${game.thumbnail}?t=${Date.now()}`,
+          }));
+        };
+
+        setGames({
+          created: processGames(createdRes.data.games),
+          liked: processGames(likedRes.data.games),
+          recent: processGames(recentRes.data.games),
+        });
+      } catch (error) {
+        console.error("Failed to fetch user games:", error);
+        // 에러 시 빈 배열 유지
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllGames();
+  }, [backendUrl]);
 
   // 초기 bio는 '만든 게임 수'로 설정
   useEffect(() => {
@@ -212,7 +240,9 @@ const MyPage = ({ isLoggedIn }) => {
           </div>
 
           <div className="game-grid">
-            {games[activeTab].length > 0 ? (
+            {loading ? (
+              <div className="loading-message">게임 목록을 불러오는 중...</div>
+            ) : games[activeTab].length > 0 ? (
               <>
                 {games[activeTab].map((game) => (
                   <div

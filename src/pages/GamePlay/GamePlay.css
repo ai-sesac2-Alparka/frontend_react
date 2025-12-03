@@ -12,11 +12,9 @@
 
 .play-container {
   width: 100%;
-  /* reduce overall width so more fits vertically on smaller viewports */
-  max-width: 1000px;
-  /* push content down to avoid header overlap (header assumed ~64-80px tall) */
+  height: calc(100vh - 80px);
   margin-top: 80px;
-  padding: 24px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -24,11 +22,15 @@
 
 /* --- 게임 화면 영역 --- */
 .game-screen-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background-color: #2D1B4E;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   border: 1px solid #3a1c6e;
+  min-height: 0;
 }
 
 .game-header-bar {
@@ -80,16 +82,19 @@
 }
 
 .control-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.refresh-btn {
+  font-size: 18px;
 }
 
 .iframe-container {
+  flex: 1;
   width: 100%;
-  height: 0;
-  /* slightly taller aspect to keep visible area but reduce vertical space usage */
-  padding-bottom: 45%; /* reduced from 56.25% to shrink vertical size */
   position: relative;
   background-color: black;
+  min-height: 0;
 }
 
 .game-iframe {
@@ -101,8 +106,68 @@
   border: none;
 }
 
+/* 에러 오버레이 */
+.error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 20px;
+  text-align: center;
+  z-index: 10;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-title {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-family: 'Paperlogy-7Bold', sans-serif;
+}
+
+.error-message {
+  margin: 0;
+  color: #666;
+  font-family: 'Paperlogy-4', sans-serif;
+}
+
+.error-url {
+  margin: 10px 0 0 0;
+  font-size: 14px;
+  color: #999;
+  font-family: 'Paperlogy-4', sans-serif;
+  word-break: break-all;
+}
+
+/* 로딩 오버레이 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  color: #fff;
+  font-family: 'Paperlogy-5', sans-serif;
+  font-size: 18px;
+  z-index: 5;
+}
+
 /* --- 하단 액션 바 --- */
 .game-action-bar {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -133,8 +198,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #ddd; /* 더미 이미지 */
-  background-image: url('https://via.placeholder.com/40');
+  background-color: #ddd;
   background-size: cover;
 }
 

@@ -70,7 +70,7 @@ function App() {
             {/* 게임 스튜디오 및 플레이 */}
             <Route path="/studio" element={<GameStudio />} />
             <Route path="/gamestudio" element={<GameStudio />} /> {/* 호환성용 */}
-            <Route path="/play/:id" element={<GamePlay />} />
+            <Route path="/play/:gameId" element={<GamePlay />} />
 
             {/* 마이페이지 */}
             <Route

@@ -1,12 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
+import { getShowcaseGames } from "../../api/arcade";
 import "./HomeCreation.css";
 
 function HomeCreation() {
   const navigate = useNavigate();
   const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedMood, setSelectedMood] = useState("");
+  const [showcaseGames, setShowcaseGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const backendUrl =
+    process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+
+  // API에서 쇼케이스 게임 불러오기
+  useEffect(() => {
+    const fetchShowcaseGames = async () => {
+      setLoading(true);
+      try {
+        const res = await getShowcaseGames(4);
+        const gamesData = res.data.games || [];
+        const processedGames = gamesData.map((game) => ({
+          ...game,
+          thumbnail: game.thumbnail?.startsWith("http")
+            ? game.thumbnail
+            : `${backendUrl}${game.thumbnail}`,
+        }));
+        setShowcaseGames(processedGames);
+      } catch (error) {
+        console.error("Failed to fetch showcase games:", error);
+        // 에러 시 기본 더미 데이터 사용
+        setShowcaseGames([
+          {
+            id: "showcase-1",
+            game_title: "테트리스",
+            thumbnail: "https://placehold.co/257x301",
+            author: "Classic Games",
+            category: "puzzle",
+            plays: 50000,
+          },
+          {
+            id: "showcase-2",
+            game_title: "갤러그",
+            thumbnail: "https://placehold.co/257x301",
+            author: "Retro Games",
+            category: "shooting",
+            plays: 45000,
+          },
+          {
+            id: "showcase-3",
+            game_title: "지뢰 찾기",
+            thumbnail: "https://placehold.co/257x301",
+            author: "Puzzle Master",
+            category: "puzzle",
+            plays: 30000,
+          },
+          {
+            id: "showcase-4",
+            game_title: "점프맵",
+            thumbnail: "https://placehold.co/257x301",
+            author: "Action Dev",
+            category: "action",
+            plays: 25000,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShowcaseGames();
+  }, [backendUrl]);
 
   // Fonts are loaded globally in src/index.js to avoid per-page timing issues
 
@@ -80,53 +145,24 @@ function HomeCreation() {
         {/* 게임 쇼케이스 */}
         <section className="game-showcase">
           <div className="game-showcase-grid">
-            {[
-              {
-                id: "showcase-1",
-                game_title: "테트리스",
-                thumbnail: "https://placehold.co/257x301",
-                author: "Classic Games",
-                category: "puzzle",
-                plays: 50000,
-              },
-              {
-                id: "showcase-2",
-                game_title: "갤러그",
-                thumbnail: "https://placehold.co/257x301",
-                author: "Retro Games",
-                category: "shooting",
-                plays: 45000,
-              },
-              {
-                id: "showcase-3",
-                game_title: "지뢰 찾기",
-                thumbnail: "https://placehold.co/257x301",
-                author: "Puzzle Master",
-                category: "puzzle",
-                plays: 30000,
-              },
-              {
-                id: "showcase-4",
-                game_title: "점프맵",
-                thumbnail: "https://placehold.co/257x301",
-                author: "Action Dev",
-                category: "action",
-                plays: 25000,
-              },
-            ].map((game, index) => (
-              <div
-                key={game.id}
-                className="game-card"
-                onClick={() => navigate(`/play/${game.id}`)}
-              >
-                <div className="game-card-image">
-                  <img src={game.thumbnail} alt={game.game_title} />
+            {loading ? (
+              <div className="loading-message">게임을 불러오는 중...</div>
+            ) : (
+              showcaseGames.map((game) => (
+                <div
+                  key={game.id}
+                  className="game-card"
+                  onClick={() => navigate(`/play/${game.id}`)}
+                >
+                  <div className="game-card-image">
+                    <img src={game.thumbnail} alt={game.game_title} />
+                  </div>
+                  <div className="game-card-info">
+                    <h3 className="game-card-title">{game.game_title}</h3>
+                  </div>
                 </div>
-                <div className="game-card-info">
-                  <h3 className="game-card-title">{game.game_title}</h3>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </section>
 

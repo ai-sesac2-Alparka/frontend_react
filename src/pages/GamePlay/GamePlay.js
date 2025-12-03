@@ -1,22 +1,96 @@
 // src/pages/GamePlay/GamePlay.js
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header/Header"; // 기존 헤더 컴포넌트 재사용
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Header from "../../components/Header/Header";
+import { getGameMetadata } from "../../api/backend";
 import "./GamePlay.css";
-
-// 이미지 에셋 (필요시 경로 수정)
-// import iconHeartOn from "../../assets/images/heart_on.png";
-// import iconHeartOff from "../../assets/images/heart_off.png";
 
 const GamePlay = () => {
   const navigate = useNavigate();
-  // URL에서 게임 ID를 사용하지 않으므로 useParams 호출은 제거했습니다.
+  const { gameId } = useParams();
+  const gameFrameRef = useRef(null);
 
   // 상태 관리
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(128); // 더미 데이터
+  const [likeCount, setLikeCount] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [metadata, setMetadata] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reloadToken, setReloadToken] = useState(0);
+  const [iframeSrc, setIframeSrc] = useState("");
+
+  // 게임 메타데이터 로드
+  useEffect(() => {
+    const loadGameMetadata = async () => {
+      if (!gameId) {
+        setLoadError(true);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await getGameMetadata(gameId);
+        const data = response.data;
+        
+        setMetadata(data);
+        setLikeCount(data.likes || 0);
+        setIsLiked(data.isLiked || false);
+        
+        // iframe src 설정 (게임 URL 구성)
+        if (data.gameUrl) {
+          setIframeSrc(data.gameUrl);
+        } else {
+          // 기본 URL 구성
+          setIframeSrc(`http://localhost:8080/${gameId}`);
+        }
+        
+        setLoadError(false);
+      } catch (error) {
+        console.error("게임 메타데이터 로드 실패:", error);
+        setLoadError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadGameMetadata();
+  }, [gameId]);
+
+  // iframe 메시지 수신 처리
+  useEffect(() => {
+    const handleIframeMessage = (event) => {
+      const data = event.data;
+
+      // error-report 메시지 처리
+      if (
+        data &&
+        data.source === "alparka-game-iframe" &&
+        data.type === "error-report"
+      ) {
+        const errorData = data.payload;
+        console.error("🚨 IFRAME 오류 수신:", errorData);
+      }
+
+      // error-batch 메시지 처리
+      if (
+        data &&
+        data.source === "alparka-game-iframe" &&
+        data.type === "error-batch"
+      ) {
+        const batchData = data.payload;
+        console.error("🚨 IFRAME 에러 배치 수신:", batchData);
+      }
+    };
+
+    window.addEventListener("message", handleIframeMessage);
+
+    return () => {
+      window.removeEventListener("message", handleIframeMessage);
+    };
+  }, []);
 
   // 핸들러
   const handleLike = () => {
@@ -25,21 +99,61 @@ const GamePlay = () => {
   };
 
   const handleEdit = () => {
-    // 게임 스튜디오로 이동 (현재 게임 ID 전달)
-    navigate(`/studio`); 
+    // 게임 스튜디오로 이동
+    navigate(`/studio/${gameId}`);
   };
 
-  const handleCopyLink = () => {
-    alert("게임 링크가 복사되었습니다!");
+  const handleCopyLink = async () => {
+    const link = window.location.href;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = link;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      window.alert("링크가 복사되었습니다!");
+    } catch (err) {
+      console.error("링크 복사 실패:", err);
+      alert("링크 복사에 실패했습니다.");
+    }
   };
 
   const handleFullscreen = () => {
-    const iframe = document.getElementById("game-iframe");
+    const iframe = gameFrameRef.current;
+    if (!iframe) return;
+    
     if (iframe.requestFullscreen) {
       iframe.requestFullscreen();
+    } else if (iframe.mozRequestFullScreen) {
+      iframe.mozRequestFullScreen();
+    } else if (iframe.webkitRequestFullscreen) {
+      iframe.webkitRequestFullscreen();
+    } else if (iframe.msRequestFullscreen) {
+      iframe.msRequestFullscreen();
     } else {
       alert("전체화면을 지원하지 않는 브라우저입니다.");
     }
+  };
+
+  const handleRefresh = () => {
+    setReloadToken((prev) => prev + 1);
+    setIsLoading(true);
+    setLoadError(false);
+  };
+
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+    setLoadError(false);
+  };
+
+  const handleIframeError = () => {
+    setIsLoading(false);
+    setLoadError(true);
   };
 
   return (
@@ -51,10 +165,19 @@ const GamePlay = () => {
         <div className="game-screen-wrapper">
             <div className="game-header-bar">
                 <div className="game-title">
-                    <span className="badge">Arcade</span>
-                    <h2>눈 내리는 크리스마스 퍼즐</h2>
+                    <span className="badge">
+                      {metadata?.category || "Arcade"}
+                    </span>
+                    <h2>{metadata?.game_title || "게임 로딩중..."}</h2>
                 </div>
                 <div className="game-controls">
+                    <button 
+                      className="control-btn refresh-btn" 
+                      onClick={handleRefresh}
+                      title="새로고침"
+                    >
+                      🔄
+                    </button>
                     <button className="control-btn" onClick={() => setIsMuted(!isMuted)}>
                         {isMuted ? "🔇" : "🔊"}
                     </button>
@@ -68,13 +191,42 @@ const GamePlay = () => {
             </div>
 
             <div className="iframe-container">
-                <iframe 
-                  id="game-iframe"
-                  className="game-iframe" 
-                  src="https://e.widgetbot.io/channels/299881420642713600/555776561194762240" // 더미 URL
-                  title="Game Play"
-                  allow="fullscreen"
-                />
+                {loadError && (
+                  <div className="error-overlay">
+                    <div className="error-icon">⚠️</div>
+                    <h3 className="error-title">게임을 불러올 수 없습니다</h3>
+                    <p className="error-message">
+                      해당 게임이 존재하지 않거나 서버에서 제공하지 않습니다.
+                    </p>
+                    {iframeSrc && (
+                      <p className="error-url">URL: {iframeSrc}</p>
+                    )}
+                  </div>
+                )}
+
+                {isLoading && !loadError && (
+                  <div className="loading-overlay">
+                    로딩 중...
+                  </div>
+                )}
+
+                {iframeSrc && (
+                  <iframe 
+                    key={reloadToken}
+                    ref={gameFrameRef}
+                    id="game-iframe"
+                    className="game-iframe" 
+                    src={iframeSrc}
+                    title="Game Play"
+                    onLoad={handleIframeLoad}
+                    onError={handleIframeError}
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    style={{
+                      display: loadError ? "none" : "block",
+                    }}
+                  />
+                )}
             </div>
         </div>
 
@@ -84,8 +236,20 @@ const GamePlay = () => {
                 <div className="creator-profile">
                     <div className="profile-img" />
                     <div className="profile-info">
-                        <span className="creator-name">알파카 장인</span>
-                        <span className="upload-date">2024. 12. 25</span>
+                        <span className="creator-name">
+                          {metadata?.author || "알파카 장인"}
+                        </span>
+                        <span className="upload-date">
+                          {metadata?.created_at ? new Date(metadata.created_at).toLocaleDateString("ko-KR", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          }) : new Date().toLocaleDateString("ko-KR", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          })}
+                        </span>
                     </div>
                 </div>
             </div>

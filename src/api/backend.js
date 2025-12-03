@@ -191,3 +191,12 @@ export const changeGameTitle = (gameName, newTitle) => {
     new_title: newTitle,
   });
 };
+
+/**
+ * Get game metadata
+ * @param {string} gameId - Game ID
+ * @returns {Promise} Axios response promise
+ */
+export const getGameMetadata = (gameId) => {
+  return backendApi.get(`/games/${gameId}/metadata`);
+};

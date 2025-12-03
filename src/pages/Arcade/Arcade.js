@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header"; // 기존 헤더 컴포넌트 임포트
+import { getArcadeGames, getTrendingGame } from "../../api/arcade";
 import "./Arcade.css";
 
 // 더미 데이터: 카테고리
@@ -51,20 +52,55 @@ const TREND_GAME = {
 const Arcade = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [games] = useState(DUMMY_GAMES);
-  const [filteredGames, setFilteredGames] = useState(DUMMY_GAMES);
+  const [games, setGames] = useState([]);
+  const [trendGame, setTrendGame] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  // 카테고리 필터링 로직
+  const backendUrl =
+    process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+
+  // API에서 게임 목록 불러오기
   useEffect(() => {
-    if (selectedCategory === "all") {
-      setFilteredGames(games);
-    } else {
-      setFilteredGames(
-        games.filter((game) => game.category === selectedCategory)
-      );
-    }
-  }, [selectedCategory, games]);
+    const fetchGames = async () => {
+      setLoading(true);
+      try {
+        const [gamesRes, trendRes] = await Promise.all([
+          getArcadeGames(selectedCategory),
+          getTrendingGame(),
+        ]);
+
+        const gamesData = gamesRes.data.games || [];
+        const processedGames = gamesData.map((game) => ({
+          ...game,
+          thumbnail: game.thumbnail?.startsWith("http")
+            ? game.thumbnail
+            : `${backendUrl}${game.thumbnail}?t=${Date.now()}`,
+        }));
+
+        setGames(processedGames);
+
+        if (trendRes.data.game) {
+          const trendData = trendRes.data.game;
+          setTrendGame({
+            ...trendData,
+            thumbnail: trendData.thumbnail?.startsWith("http")
+              ? trendData.thumbnail
+              : `${backendUrl}${trendData.thumbnail}?t=${Date.now()}`,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+        // 에러 시 더미 데이터 사용
+        setGames(DUMMY_GAMES);
+        setTrendGame(TREND_GAME);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, [selectedCategory, backendUrl]);
 
   const handleGameClick = (gameId) => {
     navigate(`/play/${gameId}`);
@@ -74,7 +110,6 @@ const Arcade = () => {
     <div className="arcade-page">
       {/* 1. 상단바 (Global Header) */}
       <Header />
-
       {/* 2. 트렌드 배너 — 헤더 바로 아래 풀 폭 배치 */}
       <section className="trend-banner full-width">
         <div className="trend-info">
@@ -84,11 +119,12 @@ const Arcade = () => {
             <br />
             TREND
           </h1>
-          <p className="trend-desc">{TREND_GAME.description}</p>
+          <p className="trend-desc">
+            {trendGame?.description || TREND_GAME.description}
+          </p>
         </div>
         {/* trend-action removed per request */}
-      </section>
-
+      </section>{" "}
       <div className="arcade-content-container">
         {/* 3. 사이드바 (카테고리 필터) */}
         <aside className="sidebar">
@@ -137,17 +173,36 @@ const Arcade = () => {
 
           {/* 게임 그리드 (3열) */}
           <section className="games-grid">
-            {filteredGames.length > 0 ? (
-              filteredGames.map((game) => (
+            {loading ? (
+              <div className="loading-message">게임 목록을 불러오는 중...</div>
+            ) : games.length > 0 ? (
+              games.map((game) => (
                 <div
                   key={game.id}
                   className="game-card"
                   onClick={() => handleGameClick(game.id)}
                 >
-                  <div
-                    className="game-thumbnail"
-                    style={{ backgroundColor: game.thumbnail }}
-                  />
+                  <div className="game-thumbnail">
+                    {game.thumbnail?.startsWith("#") ? (
+                      <div
+                        style={{
+                          backgroundColor: game.thumbnail,
+                          width: "100%",
+                          height: "100%",
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={game.thumbnail}
+                        alt={game.game_title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                  </div>
                   <div className="game-info">
                     <h3 className="card-title">{game.game_title}</h3>
                     <div className="card-meta" />
