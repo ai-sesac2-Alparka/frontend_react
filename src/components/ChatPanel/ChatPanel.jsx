@@ -1,29 +1,45 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./ChatPanel.css";
 import {
   sendErrorBatch,
-  getSnapshotLog,
-  getGameData,
   revertGame,
   processCodeMessage,
   getChat,
 } from "../../api/backend";
 import { useGame } from "../../contexts/GameContext";
+import { useSnapshotTree } from "../../hooks/useSnapshotTree";
+import { useGameData } from "../../hooks/useGameData";
+import { useAssets } from "../../hooks/useAssets";
 
 export default function ChatPanel({
   initialMessages = [],
   onReady = null,
   gameErrorBatch = null,
   onErrorBatchHandled = null,
+  onGameReload = null,
 }) {
-  const { gameTitle, projectId, setGameData, setSnapshots } = useGame();
+  const {
+    projectId,
+    gameTitle,
+    setGameData,
+    setSnapshots,
+    setAssets,
+    setAssetStamp,
+  } = useGame();
+
+  // Hooks 사용 - 각 탭의 데이터를 갱신하기 위해
+  const targetCtx = React.useMemo(
+    () => ({ projectId, gameName: gameTitle }),
+    [projectId, gameTitle],
+  );
+  const { fetchSnapshots } = useSnapshotTree(targetCtx);
+  const { fetchGameData } = useGameData(targetCtx);
+  const { fetchAssets } = useAssets(targetCtx);
+
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
+  const [contextEntityId, setContextEntityId] = useState("");
   const messagesEndRef = useRef(null);
-  const target = useMemo(
-    () => ({ gameName: gameTitle, projectId }),
-    [gameTitle, projectId],
-  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,15 +63,25 @@ export default function ChatPanel({
   // 페이지 로드 시 채팅 이력 불러오기
   useEffect(() => {
     const loadChatHistory = async () => {
-      if (!gameTitle && !projectId) return;
+      if (!projectId && !gameTitle) return;
 
       try {
-        const response = await getChat(target);
-        const chatData = response?.data?.chat;
+        const response = await getChat(targetCtx);
+        const chatData =
+          response?.data?.chat_history ||
+          response?.data?.chat ||
+          response?.data?.chatHistory;
 
         if (Array.isArray(chatData) && chatData.length > 0) {
-          // from을 type으로 변환
-          const formattedMessages = chatData.map((msg) => ({
+          // 엔티티 필터 적용 후 from을 type으로 변환
+          const filtered = chatData.filter((msg) => {
+            if (!contextEntityId) return true;
+            return (
+              msg.context_entity_id === contextEntityId ||
+              msg.contextEntityId === contextEntityId
+            );
+          });
+          const formattedMessages = filtered.map((msg) => ({
             ...msg,
             type: msg.from === "user" ? "user" : "bot",
           }));
@@ -67,7 +93,7 @@ export default function ChatPanel({
     };
 
     loadChatHistory();
-  }, [gameTitle, projectId, target]);
+  }, [targetCtx, projectId, gameTitle, contextEntityId]);
 
   // 게임 에러 배치가 들어오면 메시지 추가
   useEffect(() => {
@@ -87,7 +113,7 @@ export default function ChatPanel({
 
     const sendError = async () => {
       try {
-        await sendErrorBatch(target, gameErrorBatch);
+        await sendErrorBatch(targetCtx, gameErrorBatch);
         console.log("✅ FastAPI 서버로 에러 전송 성공");
       } catch (error) {
         console.error("❌ FastAPI 서버로 에러 전송 실패:", error);
@@ -99,38 +125,52 @@ export default function ChatPanel({
     };
 
     sendError();
-  }, [gameErrorBatch, onErrorBatchHandled, target]);
+  }, [gameErrorBatch, onErrorBatchHandled, targetCtx]);
 
-  // 공통: 스냅샷 로그 및 게임 데이터 최신화
-  const refreshSnapshotAndGameData = async () => {
+  // 공통: 스냅샷 로그 및 게임 데이터, 에셋 최신화 (Hook 사용)
+  const refreshAllData = async () => {
+    if (!projectId && !gameTitle) return;
+
     try {
-      const snapRes = await getSnapshotLog(target);
-      const data = snapRes?.data;
-      if (data && setSnapshots) {
-        setSnapshots(data.versions || data);
+      // 1. 스냅샷 로그 갱신
+      const snapshots = await fetchSnapshots();
+      if (snapshots && setSnapshots) {
+        setSnapshots(snapshots);
       }
     } catch (snapErr) {
-      console.warn("스냅샷 로그 가져오기 실패:", snapErr);
+      console.warn("스냅샷 로그 갱신 실패:", snapErr);
     }
 
-    if (setGameData && (gameTitle || projectId)) {
-      try {
-        const res = await getGameData(target);
-        const payload = res?.data;
-        if (payload && typeof payload === "object") {
-          setGameData(payload);
-        } else {
-          console.warn("예상치 못한 /game_data 응답 형식:", payload);
-        }
-      } catch (gdErr) {
-        console.warn("게임 데이터 갱신 실패(/game_data):", gdErr);
+    try {
+      // 2. 게임 데이터 갱신
+      const gameData = await fetchGameData();
+      if (gameData && setGameData) {
+        setGameData(gameData);
       }
+    } catch (gdErr) {
+      console.warn("게임 데이터 갱신 실패:", gdErr);
+    }
+
+    try {
+      // 3. 에셋 데이터 갱신
+      const assets = await fetchAssets();
+      if (assets && setAssets) {
+        setAssets(assets);
+        setAssetStamp(Date.now()); // 에셋 변경 시 스탬프 갱신
+      }
+    } catch (assetErr) {
+      console.warn("에셋 갱신 실패:", assetErr);
+    }
+
+    // 4. 게임 iframe 리로드 (부모 컴포넌트에 알림)
+    if (onGameReload) {
+      onGameReload();
     }
   };
 
   const handleRevert = async () => {
     try {
-      const response = await revertGame(target);
+      const response = await revertGame(targetCtx);
 
       const botMessage = {
         text: response.data.reply || "이전 상태로 되돌렸습니다.",
@@ -138,7 +178,7 @@ export default function ChatPanel({
       };
       setMessages((prev) => [...prev, botMessage]);
 
-      await refreshSnapshotAndGameData();
+      await refreshAllData();
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
@@ -159,7 +199,11 @@ export default function ChatPanel({
     setMessages((prev) => [...prev, tempBotMessage]);
 
     try {
-      const response = await processCodeMessage(messageText, target);
+      const response = await processCodeMessage(
+        messageText,
+        targetCtx,
+        contextEntityId || null,
+      );
 
       if (response.data.status === "success") {
         setMessages((prev) =>
@@ -169,7 +213,7 @@ export default function ChatPanel({
               : msg,
           ),
         );
-        await refreshSnapshotAndGameData();
+        await refreshAllData();
       } else {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -202,7 +246,7 @@ export default function ChatPanel({
     sendCodeMessage(currentMessage, "응답을 생성하는 중입니다...");
   };
 
-  const bgUrl = (import.meta.env.BASE_URL || "") + "images/background.svg";
+  const bgUrl = (process.env.PUBLIC_URL || "") + "/images/background.svg";
 
   return (
     <div className="chat-panel">
@@ -211,6 +255,17 @@ export default function ChatPanel({
         <button onClick={handleRevert} className="revert-button">
           최근 변경사항 되돌리기
         </button>
+      </div>
+      <div className="chat-controls">
+        <label>
+          context entity id
+          <input
+            type="text"
+            value={contextEntityId}
+            onChange={(e) => setContextEntityId(e.target.value)}
+            placeholder="엔티티 ID 입력(옵션)"
+          />
+        </label>
       </div>
       <div
         className="chat-messages"

@@ -79,7 +79,7 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
 
 export default function SnapshotTree({
   gameName,
-  projectId,
+  projectId: projectIdProp,
   showImportExport = true,
 }) {
   // Context에서 snapshots 가져오기 및 업데이트 함수
@@ -89,14 +89,24 @@ export default function SnapshotTree({
     setGameData,
     setAssets,
     setAssetStamp,
+    projectId: projectIdCtx,
+    gameTitle,
   } = useGame();
+
+  const target = useMemo(
+    () => ({
+      projectId: projectIdProp || projectIdCtx || "",
+      gameName: gameName || gameTitle || "",
+    }),
+    [projectIdProp, projectIdCtx, gameName, gameTitle],
+  );
 
   // Hook 사용: 스냅샷 관리 (게임 데이터 갱신 포함)
   const {
     versions: hookVersions,
     restoreAndRefresh: restoreSnapshot,
     fetchSnapshots,
-  } = useSnapshotTree({ gameName, projectId });
+  } = useSnapshotTree(target);
 
   const [customData, setCustomData] = useState(null);
 
@@ -122,13 +132,13 @@ export default function SnapshotTree({
   // 컴포넌트 마운트 시 스냅샷 로드 (Context에 데이터가 없을 때만)
   useEffect(() => {
     if (
-      (gameName || projectId) &&
+      (target.projectId || target.gameName) &&
       !customData &&
       (!contextSnapshots || contextSnapshots.length === 0)
     ) {
       fetchSnapshots();
     }
-  }, [gameName, projectId, customData, contextSnapshots, fetchSnapshots]);
+  }, [target, customData, contextSnapshots, fetchSnapshots]);
 
   // 외부 data 혹은 업로드 데이터 변화에 따라 versions 상태 갱신
   const effectiveData = useMemo(
@@ -584,7 +594,7 @@ export default function SnapshotTree({
                         console.log("에셋 업데이트");
                         // 에셋 데이터를 Context에 맞는 형식으로 변환
                         const backendUrl =
-                          import.meta.env.VITE_BACKEND_URL ||
+                          process.env.REACT_APP_BACKEND_URL ||
                           "http://localhost:8000";
                         const images = Array.isArray(result.assets.images)
                           ? result.assets.images.map((img, idx) => ({

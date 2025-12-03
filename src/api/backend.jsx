@@ -11,7 +11,7 @@ const normalizeTarget = (target) => {
 
   return {
     projectId: target.projectId || target.project_id || "",
-    gameName: "",
+    gameName: target.gameName || target.game_name || "",
     version: target.version,
     data: target.data,
     payload: target.payload,
@@ -19,8 +19,8 @@ const normalizeTarget = (target) => {
 };
 
 // spec 호출만 담당, response 후처리는 하지 않음
-export const getGameSpec = (gameName) =>
-  quadrakillAdapter.projects.draft(gameName);
+export const getGameSpec = (projectId) =>
+  quadrakillAdapter.projects.draft(projectId);
 
 // 선택한 게임 버전 복원 요청
 export const restoreGameVersion = (target, version) =>
@@ -33,17 +33,27 @@ export const restoreGameVersion = (target, version) =>
 export const getSnapshotLog = (target) =>
   quadrakillAdapter.legacy.snapshotLog(normalizeTarget(target));
 
-// 게임 데이터 조회
-export const getGameData = (target) =>
-  quadrakillAdapter.legacy.gameData(normalizeTarget(target));
+// 게임 데이터 조회 (projectId 우선, 레거시 fallback)
+export const getGameData = (target) => {
+  const ctx = normalizeTarget(target);
+  if (ctx.projectId) {
+    return quadrakillAdapter.projects.draft(ctx.projectId);
+  }
+  return quadrakillAdapter.legacy.gameData(ctx);
+};
 
-// 채팅 기록 조회
-export const getChat = (target) =>
-  quadrakillAdapter.legacy.chat(normalizeTarget(target));
+// 채팅 기록 조회 (projectId 우선)
+export const getChat = (target) => {
+  const ctx = normalizeTarget(target);
+  if (ctx.projectId) {
+    return quadrakillAdapter.projects.draft(ctx.projectId);
+  }
+  return quadrakillAdapter.legacy.chat(ctx);
+};
 
-// 게임 에셋 조회
+// 게임 에셋 조회 (projectId 우선)
 export const getGameAssets = (target) =>
-  quadrakillAdapter.legacy.assets(normalizeTarget(target));
+  quadrakillAdapter.assets.list(normalizeTarget(target));
 
 // 게임 에셋 교체
 export const replaceAsset = (target, previewItem, file) => {
@@ -58,8 +68,13 @@ export const replaceAsset = (target, previewItem, file) => {
 };
 
 // 게임 데이터 업데이트
-export const updateGameData = (target, data) =>
-  quadrakillAdapter.legacy.dataUpdate({ ...normalizeTarget(target), data });
+export const updateGameData = (target, data) => {
+  const ctx = normalizeTarget(target);
+  if (ctx.projectId) {
+    return quadrakillAdapter.projects.updateDraft(ctx.projectId, data);
+  }
+  return quadrakillAdapter.legacy.dataUpdate({ ...ctx, data });
+};
 
 // 에러 배치 전송
 export const sendErrorBatch = (
@@ -85,13 +100,14 @@ export const revertGame = (target) =>
   quadrakillAdapter.legacy.revert(normalizeTarget(target));
 
 // 코드 메시지 처리 요청
-export const processCodeMessage = (message, target) => {
+export const processCodeMessage = (message, target, contextEntityId = null) => {
   const ctx = normalizeTarget(target);
   // Route through Quadrakill generate endpoint for unified backend
   const engine = getEngineAdapter();
   return engine.generate.run(message, {
     task_type: "CHAT",
     project_id: ctx.projectId || ctx.gameName,
+    context_entity_id: contextEntityId,
   });
 };
 

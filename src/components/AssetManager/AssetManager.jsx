@@ -26,15 +26,20 @@ export default function AssetManager({
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [generationPrompt, setGenerationPrompt] = useState("");
+  const [worldType, setWorldType] = useState("tileset");
+  const [style, setStyle] = useState("pixel");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [wizardJson, setWizardJson] = useState(null);
+  const [applyDraft, setApplyDraft] = useState(false);
+  const [draftApplyStatus, setDraftApplyStatus] = useState("");
   const audioRef = useRef(null);
-  const [filterKind, setFilterKind] = useState("all"); // all | image | sound
-  const quickUploadRef = useRef(null);
 
   // Context의 assets 사용
   const assets = contextAssets || [];
 
   useEffect(() => {
-    if (!gameTitle || !gameTitle.trim()) return;
+    if (!projectId && !gameTitle?.trim()) return;
     // Context에 데이터가 없을 때만 백엔드에서 fetch
     if (!contextAssets || contextAssets.length === 0) {
       const loadAssets = async () => {
@@ -46,7 +51,7 @@ export default function AssetManager({
       loadAssets();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameTitle, projectId]); // gameTitle만 의존성으로 설정
+  }, [gameTitle, projectId]); // 식별자 의존
 
   // 사운드 에셋 선택 시 자동 재생
   useEffect(() => {
@@ -71,13 +76,141 @@ export default function AssetManager({
     close();
   };
 
-  const copyToClipboard = async (text) => {
-    if (!text) return;
+  const fetchBlobFromUrl = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("생성된 에셋을 가져오지 못했습니다.");
+    const blob = await res.blob();
+    const filename = url.split("/").pop() || "generated";
+    return new File([blob], filename, {
+      type: blob.type || "application/octet-stream",
+    });
+  };
+
+  const inferTypeFromBlob = (blob) => {
+    if (blob.type?.includes("png") || blob.type?.includes("jpeg"))
+      return "image";
+    if (blob.type?.includes("json")) return "json";
+    if (blob.type?.includes("audio")) return "sound";
+    return "raw";
+  };
+
+  const handleUploadAsset = async ({ file, type, name }) => {
+    await quadrakillAdapter.assets.upload({
+      file,
+      type,
+      projectId,
+      name: name || file.name,
+    });
+    const result = await fetchAssets();
+    if (result) {
+      setAssets(result);
+      setAssetStamp(Date.now());
+    }
+  };
+
+  const handleGenerate2D = async () => {
+    if (!projectId) {
+      alert("projectId가 필요합니다.");
+      return;
+    }
+    if (!generationPrompt.trim()) {
+      alert("프롬프트를 입력해주세요.");
+      return;
+    }
+    setAiLoading(true);
     try {
-      await navigator.clipboard.writeText(text);
-      alert("클립보드에 복사되었습니다.");
+      const res = await quadrakillAdapter.ai2d.spriteSheet(
+        generationPrompt.trim(),
+        style,
+        worldType,
+      );
+      const data = res?.data || {};
+      const url =
+        data.url ||
+        data.image_url ||
+        data.sprite_sheet_url ||
+        data.spriteSheetUrl;
+      if (!url) {
+        throw new Error("생성 결과에서 이미지 URL을 찾지 못했습니다.");
+      }
+      const file = await fetchBlobFromUrl(url);
+      const resolvedType = inferTypeFromBlob(file);
+      if (resolvedType !== "image" && resolvedType !== "raw") {
+        throw new Error(
+          `지원하지 않는 MIME(${file.type || "unknown"}) 결과입니다.`,
+        );
+      }
+      await handleUploadAsset({ file, type: resolvedType, name: file.name });
     } catch (err) {
-      console.warn("클립보드 복사 실패:", err);
+      console.error(err);
+      alert(err.message || "2D 생성/업로드에 실패했습니다.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleWizardConstruct = async () => {
+    if (!projectId) {
+      alert("projectId가 필요합니다.");
+      return;
+    }
+    if (!generationPrompt.trim()) {
+      alert("프롬프트를 입력해주세요.");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const draftRes = await quadrakillAdapter.wizard.draft(
+        generationPrompt.trim(),
+        [],
+      );
+      const options = draftRes?.data?.options || draftRes?.data || {};
+      const constructRes = await quadrakillAdapter.wizard.construct(
+        options,
+        "3d",
+        "LOW",
+        2048,
+      );
+
+      // construct 응답이 JSON(ecs/scene)일 때 파일 업로드 시도
+      const constructData = constructRes?.data || constructRes;
+      setWizardJson(constructData);
+
+      if (constructData && typeof constructData === "object") {
+        const serialized = JSON.stringify(constructData, null, 2);
+        const file = new File([serialized], `wizard-${Date.now()}.json`, {
+          type: "application/json",
+        });
+        await handleUploadAsset({
+          file,
+          type: "json",
+          name: file.name,
+        });
+
+        if (applyDraft) {
+          try {
+            setDraftApplyStatus("Draft 적용 중…");
+            await quadrakillAdapter.projects.updateDraft(
+              projectId,
+              constructData,
+            );
+            const updatedAssets = await fetchAssets();
+            if (updatedAssets) {
+              setAssets(updatedAssets);
+              setAssetStamp(Date.now());
+            }
+            setDraftApplyStatus("Draft 저장 완료");
+          } catch (draftErr) {
+            console.error(draftErr);
+            setDraftApplyStatus("Draft 저장 실패");
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "플랜/구성 생성에 실패했습니다.");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -92,94 +225,88 @@ export default function AssetManager({
 
       {!loading && (
         <div className="asset-sections-container">
-          {!selected && (
-            <div
-              className="asset-quick-upload"
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-                marginBottom: 12,
-              }}
-            >
-              <label
-                className="upload-label"
-                style={{ display: "flex", gap: 8 }}
-                htmlFor="quick-upload"
-              >
-                파일 선택
-                <input
-                  ref={quickUploadRef}
-                  type="file"
-                  id="quick-upload"
-                  aria-label="파일 선택"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    if (!projectId) {
-                      alert("projectId가 필요합니다");
-                      return;
-                    }
-                    try {
-                      setUploading(true);
-                      await quadrakillAdapter.assets.upload({
-                        file,
-                        type: file.type?.startsWith("image/") ? "image" : "raw",
-                        projectId,
-                        name: file.name,
-                      });
-                      const refreshed = await fetchAssets();
-                      if (refreshed) {
-                        setAssets(refreshed);
-                        setAssetStamp(Date.now());
-                      }
-                    } catch (err) {
-                      console.error("quick upload failed:", err);
-                      alert(err.message || "업로드 중 오류가 발생했습니다.");
-                    } finally {
-                      setUploading(false);
-                      if (quickUploadRef.current) {
-                        quickUploadRef.current.value = "";
-                      }
-                    }
-                  }}
-                />
-              </label>
-              {uploading && <span style={{ fontSize: 12 }}>업로드 중…</span>}
+          {/* 생성/업로드 패널 */}
+          <section className="asset-section">
+            <h3 className="section-title">AI 생성</h3>
+            <div className="generator-box">
+              <textarea
+                value={generationPrompt}
+                onChange={(e) => setGenerationPrompt(e.target.value)}
+                placeholder="게임 콘셉트나 원하는 에셋 설명을 입력하세요"
+                className="asset-prompt"
+              />
+              <div className="generator-controls">
+                <label>
+                  world_type
+                  <select
+                    value={worldType}
+                    onChange={(e) => setWorldType(e.target.value)}
+                  >
+                    <option value="tileset">tileset</option>
+                    <option value="isometric">isometric</option>
+                    <option value="room">room</option>
+                    <option value="board">board</option>
+                    <option value="scrolling_bg">scrolling_bg</option>
+                    <option value="parallax">parallax</option>
+                  </select>
+                </label>
+                <label>
+                  style
+                  <select
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
+                  >
+                    <option value="pixel">pixel</option>
+                    <option value="toon">toon</option>
+                    <option value="realistic">realistic</option>
+                  </select>
+                </label>
+                <div className="generator-actions">
+                  <button
+                    className="btn-primary"
+                    onClick={handleGenerate2D}
+                    disabled={aiLoading}
+                  >
+                    {aiLoading ? "생성 중…" : "2D 생성+업로드"}
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleWizardConstruct}
+                    disabled={aiLoading}
+                  >
+                    {aiLoading ? "생성 중…" : "플랜/ECS 생성"}
+                  </button>
+                </div>
+                <label
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={applyDraft}
+                    onChange={(e) => setApplyDraft(e.target.checked)}
+                  />
+                  생성된 JSON을 draft(working_data)로 바로 저장
+                </label>
+                {draftApplyStatus && (
+                  <div className="draft-status">{draftApplyStatus}</div>
+                )}
+              </div>
+              {wizardJson && (
+                <pre className="wizard-preview">
+                  {JSON.stringify(wizardJson, null, 2)}
+                </pre>
+              )}
             </div>
-          )}
-          <div className="asset-filters">
-            <label>
-              타입 필터:
-              <select
-                value={filterKind}
-                onChange={(e) => setFilterKind(e.target.value)}
-                aria-hidden="true"
-                tabIndex={-1}
-              >
-                <option value="all">전체</option>
-                <option value="image">이미지</option>
-                <option value="sound">사운드</option>
-              </select>
-            </label>
-          </div>
+          </section>
           {/* 이미지 섹션 */}
           <section className="asset-section">
             <h3 className="section-title">이미지</h3>
             <div className="assets-grid">
-              {assets.filter(
-                (a) =>
-                  a.kind === "image" &&
-                  (filterKind === "all" || filterKind === "image"),
-              ).length === 0 && (
+              {assets.filter((a) => a.type === "image").length === 0 && (
                 <div className="empty-message">이미지가 없습니다.</div>
               )}
               {assets
-                .filter(
-                  (a) =>
-                    a.kind === "image" &&
-                    (filterKind === "all" || filterKind === "image"),
-                )
+                .filter((a) => a.type === "image")
                 .map((a) => {
                   const stampedSrc = assetStamp
                     ? `${a.src}?v=${assetStamp}`
@@ -195,10 +322,7 @@ export default function AssetManager({
                       <div className="asset-preview">
                         <img src={stampedSrc} alt={a.name} />
                       </div>
-                      <div className="asset-name">
-                        {a.displayName || a.name}{" "}
-                        {a.type && a.type !== "image" ? `(${a.type})` : ""}
-                      </div>
+                      <div className="asset-name">{a.name}</div>
                     </div>
                   );
                 })}
@@ -209,19 +333,11 @@ export default function AssetManager({
           <section className="asset-section">
             <h3 className="section-title">사운드</h3>
             <div className="assets-grid">
-              {assets.filter(
-                (a) =>
-                  a.kind === "sound" &&
-                  (filterKind === "all" || filterKind === "sound"),
-              ).length === 0 && (
+              {assets.filter((a) => a.type === "sound").length === 0 && (
                 <div className="empty-message">사운드가 없습니다.</div>
               )}
               {assets
-                .filter(
-                  (a) =>
-                    a.kind === "sound" &&
-                    (filterKind === "all" || filterKind === "sound"),
-                )
+                .filter((a) => a.type === "sound")
                 .map((a) => {
                   return (
                     <div
@@ -234,10 +350,7 @@ export default function AssetManager({
                       <div className="asset-preview">
                         <div className="audio-placeholder">🎵</div>
                       </div>
-                      <div className="asset-name">
-                        {a.displayName || a.name}{" "}
-                        {a.type && a.type !== "sound" ? `(${a.type})` : ""}
-                      </div>
+                      <div className="asset-name">{a.name}</div>
                     </div>
                   );
                 })}
@@ -252,62 +365,8 @@ export default function AssetManager({
             <button className="asset-modal-x" aria-label="닫기" onClick={close}>
               ×
             </button>
-            <h3 className="asset-modal-title">선택한 에셋</h3>
+            <h3 className="asset-modal-title">{selected.name}</h3>
             <div className="asset-modal-body">
-              <div className="asset-meta">
-                {selected.type && (
-                  <div className="asset-meta-row">타입: {selected.type}</div>
-                )}
-                {selected.projectId && (
-                  <div className="asset-meta-row">
-                    프로젝트: {selected.projectId}
-                    <button
-                      className="asset-meta-copy"
-                      onClick={() => copyToClipboard(selected.projectId)}
-                    >
-                      복사
-                    </button>
-                  </div>
-                )}
-                {selected.storagePath && (
-                  <div className="asset-meta-row">
-                    {(() => {
-                      const parts = selected.storagePath.split("/");
-                      const dir =
-                        parts.length > 1
-                          ? parts.slice(0, parts.length - 1).join("/")
-                          : selected.storagePath;
-                      return (
-                        <>
-                          경로: {dir}
-                          <button
-                            className="asset-meta-copy"
-                            onClick={() => copyToClipboard(dir)}
-                          >
-                            복사
-                          </button>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
-                {selected.metadata?.checksum_sha256 && (
-                  <div className="asset-meta-row">
-                    SHA256: {selected.metadata.checksum_sha256.slice(0, 12)}…
-                    <button
-                      className="asset-meta-copy"
-                      onClick={() =>
-                        copyToClipboard(selected.metadata.checksum_sha256)
-                      }
-                    >
-                      복사
-                    </button>
-                  </div>
-                )}
-                {!selected.metadata?.checksum_sha256 && (
-                  <div className="asset-meta-row">SHA256: 없음</div>
-                )}
-              </div>
               <div className="asset-modal-preview-large">
                 {selected.type === "image" && selected.src ? (
                   <img

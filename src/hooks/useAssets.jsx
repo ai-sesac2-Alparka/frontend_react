@@ -6,24 +6,6 @@ import {
   getGameData,
 } from "../api/backend";
 
-const normalizeTarget = (target) => {
-  if (typeof target === "string") {
-    return { projectId: undefined, gameName: target || "" };
-  }
-  if (!target) {
-    return { projectId: undefined, gameName: "" };
-  }
-  return {
-    projectId: target.projectId || target.project_id,
-    gameName:
-      target.gameName ||
-      target.game_name ||
-      target.projectId ||
-      target.project_id ||
-      "",
-  };
-};
-
 /**
  * Assets(에셋) 데이터를 관리하는 Custom Hook
  * - 에셋 데이터 조회
@@ -31,6 +13,16 @@ const normalizeTarget = (target) => {
  * - 스냅샷 로그 자동 동기화
  * - 여러 컴포넌트에서 재사용 가능
  */
+const normalizeTarget = (target) => {
+  if (typeof target === "string")
+    return { projectId: target || "", gameName: "" };
+  if (!target) return { projectId: "", gameName: "" };
+  return {
+    projectId: target.projectId || target.project_id || "",
+    gameName: target.gameName || target.game_name || "",
+  };
+};
+
 export const useAssets = (target) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -40,7 +32,7 @@ export const useAssets = (target) => {
    * 에셋 목록을 서버에서 가져오기
    */
   const fetchAssets = useCallback(async () => {
-    if (!ctx.gameName?.trim() && !ctx.projectId) {
+    if (!ctx.projectId && !ctx.gameName?.trim()) {
       return [];
     }
 
@@ -54,56 +46,37 @@ export const useAssets = (target) => {
       const backendUrl =
         import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
+      const mapAsset = (item, idx, type) => {
+        const name =
+          item.name || item.logical_name || item.filename || `${type}-${idx}`;
+        const resolved = item.url?.startsWith("http")
+          ? item.url
+          : item.url
+            ? `${backendUrl}${item.url}`
+            : item.storage_path
+              ? `${backendUrl}/${item.storage_path}`
+              : "";
+        return {
+          id: `${type}-${idx}`,
+          type,
+          name,
+          src: resolved,
+          url: resolved,
+          projectId: item.project_id,
+          storagePath: item.storage_path,
+          checksum: item.metadata?.checksum_sha256,
+        };
+      };
+
       const images = Array.isArray(data?.images)
-        ? data.images.map((img, idx) => ({
-            id: `img-${idx}`,
-            type: img.asset_type || img.type || "image",
-            name: img.name,
-            src: img.url.startsWith("http")
-              ? img.url
-              : `${backendUrl}${img.url}`,
-            url: img.url.startsWith("http")
-              ? img.url
-              : `${backendUrl}${img.url}`,
-            storagePath: img.storage_path,
-            projectId: img.project_id,
-            metadata: img.metadata || {},
-            checksum: img.metadata?.checksum_sha256,
-            label: img.asset_type || img.type || "image",
-            kind: "image",
-          }))
+        ? data.images.map((img, idx) => mapAsset(img, idx, "image"))
         : [];
 
       const sounds = Array.isArray(data?.sounds)
-        ? data.sounds.map((snd, idx) => ({
-            id: `snd-${idx}`,
-            type: snd.asset_type || snd.type || "sound",
-            name: snd.name,
-            src: snd.url.startsWith("http")
-              ? snd.url
-              : `${backendUrl}${snd.url}`,
-            url: snd.url.startsWith("http")
-              ? snd.url
-              : `${backendUrl}${snd.url}`,
-            storagePath: snd.storage_path,
-            projectId: snd.project_id,
-            metadata: snd.metadata || {},
-            checksum: snd.metadata?.checksum_sha256,
-            label: snd.asset_type || snd.type || "sound",
-            kind: "sound",
-          }))
+        ? data.sounds.map((snd, idx) => mapAsset(snd, idx, "sound"))
         : [];
 
-      const allAssets = [...images, ...sounds];
-      const deduped = [];
-      const seen = new Set();
-      allAssets.forEach((a) => {
-        const displayName = (a.name || "").split("_").pop();
-        if (seen.has(displayName)) return;
-        seen.add(displayName);
-        deduped.push({ ...a, displayName });
-      });
-      return deduped;
+      return [...images, ...sounds];
     } catch (err) {
       console.error("Failed to fetch assets:", err);
       setError("에셋 목록을 불러오지 못했습니다.");
@@ -118,7 +91,7 @@ export const useAssets = (target) => {
    */
   const replaceAndRefresh = useCallback(
     async (selectedAsset, file) => {
-      if ((!ctx.gameName?.trim() && !ctx.projectId) || !selectedAsset || !file)
+      if ((!ctx.projectId && !ctx.gameName) || !selectedAsset || !file)
         return null;
 
       // MP3 파일 검증 (사운드인 경우)

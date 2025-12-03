@@ -21,13 +21,7 @@ import { getSnapshotLog, getGameAssets, replaceAsset } from "../../api/backend";
   참고: 파일 변경 후 최신 썸네일을 강제로 갱신하고 싶으면 timestamp 쿼리를 추가해 캐시를 회피.
 */
 
-function MediaExplorer({
-  gameName,
-  projectId,
-  isLocked,
-  refreshToken,
-  onSnapshotUpdate,
-}) {
+function MediaExplorer({ gameName, isLocked, refreshToken, onSnapshotUpdate }) {
   const [assets, setAssets] = useState({ images: [], sounds: [] });
   const [, setLoading] = useState(false); // internal fetch state only (no UI binding)
   const [error, setError] = useState(null);
@@ -37,13 +31,9 @@ function MediaExplorer({
   const [assetStamp, setAssetStamp] = useState(0); // 캐시 무효화용 스탬프
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
-  const target = React.useMemo(
-    () => ({ gameName, projectId }),
-    [gameName, projectId],
-  );
 
   const fetchAssets = async () => {
-    if (!isLocked || (!gameName?.trim() && !projectId)) {
+    if (!isLocked || !gameName || !gameName.trim()) {
       setAssets({ images: [], sounds: [] });
       return;
     }
@@ -51,29 +41,27 @@ function MediaExplorer({
       setLoading(true);
       setError(null);
 
-      const res = await getGameAssets(target);
+      const res = await getGameAssets(gameName);
       const data = res?.data;
 
       const backendUrl =
-        import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+        process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 
       const images = Array.isArray(data?.images)
         ? data.images.map((img) => ({
             ...img,
-            url: img.url?.startsWith("http")
+            url: img.url.startsWith("http")
               ? img.url
               : `${backendUrl}${img.url}`,
-            label: img.asset_type || img.type || "image",
           }))
         : [];
 
       const sounds = Array.isArray(data?.sounds)
         ? data.sounds.map((snd) => ({
             ...snd,
-            url: snd.url?.startsWith("http")
+            url: snd.url.startsWith("http")
               ? snd.url
               : `${backendUrl}${snd.url}`,
-            label: snd.asset_type || snd.type || "sound",
           }))
         : [];
 
@@ -89,7 +77,7 @@ function MediaExplorer({
 
   // gameName 확정 후 또는 스냅샷 갱신(refreshToken 변화) 시에만 로드
   useEffect(() => {
-    if (!isLocked || (!gameName?.trim() && !projectId)) return;
+    if (!isLocked || !gameName || !gameName.trim()) return;
     if (!Number.isFinite(refreshToken) || refreshToken <= 0) return;
 
     // React 18 StrictMode에서는 mount 시 effect가 2번 호출될 수 있으므로
@@ -100,7 +88,7 @@ function MediaExplorer({
     lastTokenRef.current = refreshToken;
     fetchAssets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshToken, isLocked, gameName, projectId, target]);
+  }, [refreshToken, isLocked, gameName]);
 
   return (
     <div className="media-explorer">
@@ -135,10 +123,6 @@ function MediaExplorer({
                       type: "image",
                       url: stampedUrl,
                       name: img.name,
-                      label: img.label,
-                      storagePath: img.storage_path || img.storagePath,
-                      projectId: img.project_id || img.projectId,
-                      metadata: img.metadata,
                     })
                   }
                 >
@@ -147,7 +131,7 @@ function MediaExplorer({
                     style={{ backgroundImage: `url(${stampedUrl})` }}
                   />
                   <div className="thumb-name" title={img.name}>
-                    {img.name} {img.label ? `(${img.label})` : ""}
+                    {img.name}
                   </div>
                 </div>
               );
@@ -175,10 +159,6 @@ function MediaExplorer({
                       type: "sound",
                       url: stampedUrl,
                       name: snd.name,
-                      label: snd.label,
-                      storagePath: snd.storage_path || snd.storagePath,
-                      projectId: snd.project_id || snd.projectId,
-                      metadata: snd.metadata,
                     })
                   }
                 >
@@ -186,7 +166,7 @@ function MediaExplorer({
                     <span className="audio-icon">🔊</span>
                   </div>
                   <div className="thumb-name" title={snd.name}>
-                    {snd.name} {snd.label ? `(${snd.label})` : ""}
+                    {snd.name}
                   </div>
                 </div>
               );
@@ -210,29 +190,7 @@ function MediaExplorer({
                 alignItems: "center",
               }}
             >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <strong>{previewItem.name}</strong>
-                {previewItem.label && (
-                  <span style={{ fontSize: 12, color: "#666" }}>
-                    타입: {previewItem.label}
-                  </span>
-                )}
-                {previewItem.projectId && (
-                  <span style={{ fontSize: 12, color: "#666" }}>
-                    프로젝트: {previewItem.projectId}
-                  </span>
-                )}
-                {previewItem.storagePath && (
-                  <span style={{ fontSize: 12, color: "#666" }}>
-                    경로: {previewItem.storagePath}
-                  </span>
-                )}
-                {previewItem.metadata?.checksum_sha256 && (
-                  <span style={{ fontSize: 12, color: "#666" }}>
-                    SHA256: {previewItem.metadata.checksum_sha256.slice(0, 12)}…
-                  </span>
-                )}
-              </div>
+              <strong>{previewItem.name}</strong>
               <button className="close" onClick={() => setPreviewItem(null)}>
                 닫기
               </button>
@@ -277,7 +235,7 @@ function MediaExplorer({
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                if (!isLocked || (!gameName?.trim() && !projectId)) {
+                if (!isLocked || !gameName?.trim()) {
                   alert("게임 이름을 먼저 확정해주세요.");
                   return;
                 }
@@ -292,7 +250,7 @@ function MediaExplorer({
                 try {
                   setUploading(true);
 
-                  await replaceAsset(target, previewItem, file);
+                  await replaceAsset(gameName, previewItem, file);
                   await fetchAssets(); // 기존 asset 목록 갱신
 
                   const newStamp = Date.now();
@@ -303,19 +261,19 @@ function MediaExplorer({
                           ...cur,
                           url: `${cur.url.split("?")[0]}?v=${newStamp}`,
                         }
-                      : cur,
+                      : cur
                   );
                   // 에셋 교체로 버전이 증가하므로 스냅샷 로그 갱신
                   try {
                     if (onSnapshotUpdate) {
-                      const snapRes = await getSnapshotLog(target);
+                      const snapRes = await getSnapshotLog(gameName);
                       const data = snapRes?.data;
                       if (data) onSnapshotUpdate(data);
                     }
                   } catch (snapErr) {
                     console.error(
                       "Failed to refresh snapshot-log after asset replace:",
-                      snapErr,
+                      snapErr
                     );
                   }
                 } catch (err) {

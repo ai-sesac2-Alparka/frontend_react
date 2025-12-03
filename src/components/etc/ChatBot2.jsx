@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./ChatBot2.css";
 import {
   getGameSpec,
@@ -7,7 +7,7 @@ import {
   specQuestion,
 } from "../../api/backend";
 
-function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
+function ChatBot({ onMarkdownUpdate, gameName }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [answers, setAnswers] = useState({});
@@ -17,10 +17,6 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
   const [pendingGroups, setPendingGroups] = useState(new Set());
   const [openRequestGroup, setOpenRequestGroup] = useState(null);
   const messagesEndRef = useRef(null);
-  const target = useMemo(
-    () => ({ gameName, projectId }),
-    [gameName, projectId],
-  );
 
   const hasUnansweredQuestions = () => {
     // 마지막 봇 메시지 그룹을 찾아서 답변이 필요한 질문이 있는지 확인
@@ -29,7 +25,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
       .find(
         (msg) =>
           msg.sender === "bot" &&
-          !msg.text.includes("응답을 생성하는 중입니다..."),
+          !msg.text.includes("응답을 생성하는 중입니다...")
       );
 
     if (!lastBotGroup) return false;
@@ -41,7 +37,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
 
     // 추가 요청에 대한 답변이 모두 있는지 확인
     const allAdditionalAnswered = Array.from(openRequestInputs).every(
-      (requestId) => additionalAnswers[requestId]?.trim(),
+      (requestId) => additionalAnswers[requestId]?.trim()
     );
 
     return !(allQuestionsAnswered && allAdditionalAnswered);
@@ -135,7 +131,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
 
     try {
       // 서버로 spec-question 요청
-      const response = await specQuestion(target, currentMessage);
+      const response = await specQuestion(gameName, currentMessage);
 
       // 서버 응답을 메시지 배열로 변환
       const newMessages = buildMessagesFromReply(response.data.reply);
@@ -182,14 +178,14 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                   className={`message ${message.sender}`}
                 >
                   {message.text}
-                </div>,
+                </div>
               );
             } else if (message.text === "응답을 생성하는 중입니다...") {
               // 임시 응답 메시지는 별도로 처리
               result.push(
                 <div key={message.id || index} className="message bot loading">
                   {message.text}
-                </div>,
+                </div>
               );
             } else {
               // 봇 메시지는 그룹화
@@ -230,7 +226,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
               const groupRequests = Array.from(openRequestInputs).filter(
                 (id) =>
                   id.startsWith(`${groupKey}|`) ||
-                  (!id.includes("|") && openRequestGroup === groupKey),
+                  (!id.includes("|") && openRequestGroup === groupKey)
               );
               return (
                 <div key={`group-${index}`} className="message-group bot">
@@ -272,7 +268,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                                 ) {
                                   handleAnswerSubmit(
                                     questionId,
-                                    answers[questionId],
+                                    answers[questionId]
                                   );
                                 }
                               }}
@@ -370,12 +366,12 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                                 !item.messages.every(
                                   (msg, msgIndex) =>
                                     msg.type === "comment" ||
-                                    answers[`q-${index}-${msgIndex}`]?.trim(),
+                                    answers[`q-${index}-${msgIndex}`]?.trim()
                                 ) ||
                                 // 추가 요청 입력창이 있고 답변이 비어있는 경우 체크
                                 groupRequests.some(
                                   (requestId) =>
-                                    !additionalAnswers[requestId]?.trim(),
+                                    !additionalAnswers[requestId]?.trim()
                                 ) ||
                                 isPending
                               }
@@ -403,7 +399,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                                 const additionalRequests = groupRequests.map(
                                   (requestId) => ({
                                     request: additionalAnswers[requestId],
-                                  }),
+                                  })
                                 );
 
                                 // 서버로 전송할 데이터 구성
@@ -416,8 +412,8 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                                 try {
                                   // 1. QnA 제출
                                   const response = await submitQnA(
-                                    target,
-                                    submitData,
+                                    gameName,
+                                    submitData
                                   );
 
                                   // 2. 서버 응답 처리
@@ -444,7 +440,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                                     // 후속 질문/코멘트 렌더링
                                     if (response.data.reply) {
                                       const followUps = buildMessagesFromReply(
-                                        response.data.reply,
+                                        response.data.reply
                                       );
                                       if (followUps.length) {
                                         setMessages((prev) => [
@@ -460,8 +456,9 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
 
                                     // 제출 성공 후 갱신된 사양서 가져오기
                                     try {
-                                      const specRes =
-                                        await getGameSpec(gameName);
+                                      const specRes = await getGameSpec(
+                                        gameName
+                                      );
                                       if (
                                         specRes?.data &&
                                         typeof onMarkdownUpdate === "function"
@@ -492,7 +489,7 @@ function ChatBot({ onMarkdownUpdate, gameName, projectId }) {
                                   } else {
                                     throw new Error(
                                       response.data.message ||
-                                        "서버 처리 중 오류가 발생했습니다.",
+                                        "서버 처리 중 오류가 발생했습니다."
                                     );
                                   }
                                 } catch (error) {

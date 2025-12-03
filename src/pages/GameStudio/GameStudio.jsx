@@ -31,79 +31,36 @@ const GameStudio = () => {
     setGameTitle,
     gameData,
     setGameData,
-    snapshots,
     setSnapshots,
     setAssets,
     setAssetStamp,
   } = useGame();
 
-  // URL 쿼리 파라미터에서 gameName/projectId 읽기 및 Context 업데이트
   const gameNameFromUrl = searchParams.get("gameName");
   const projectIdFromUrl = searchParams.get("projectId");
-  const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
     if (projectIdFromUrl && projectIdFromUrl !== projectId) {
       setProjectId(projectIdFromUrl);
     }
-    // projectId 우선, gameName은 표시용으로만 사용
     if (gameNameFromUrl && gameNameFromUrl !== gameTitle) {
       setGameTitle(gameNameFromUrl);
-    } else if (projectIdFromUrl && !gameTitle) {
-      setGameTitle(projectIdFromUrl);
     }
   }, [
     searchParams,
     gameTitle,
+    projectId,
     setGameTitle,
+    setProjectId,
     gameNameFromUrl,
     projectIdFromUrl,
-    projectId,
-    setProjectId,
   ]);
 
-  // projectId가 없으면 서버에서 resolve/create 시도 (기본 식별자는 projectId)
-  useEffect(() => {
-    const ensureProjectId = async () => {
-      if (projectId || !(gameTitle || gameNameFromUrl)) return;
-      const title = gameTitle || gameNameFromUrl;
-      try {
-        const res = await quadrakillAdapter.projects.resolve(title, {
-          create: true,
-          userId: "user-1",
-        });
-        if (res?.data?.id) {
-          setProjectId(res.data.id);
-        }
-      } catch (err) {
-        console.warn("프로젝트 resolve/create 실패:", err);
-      }
-    };
-    ensureProjectId();
-  }, [projectId, gameTitle, gameNameFromUrl, setProjectId]);
-
-  // Draft가 비어 있을 경우 bootstrap 1회 시도
-  useEffect(() => {
-    const bootstrap = async () => {
-      if (!projectId || bootstrapped) return;
-      try {
-        await quadrakillAdapter.projects.bootstrap(projectId);
-      } catch (err) {
-        console.warn("bootstrap 실패:", err);
-      } finally {
-        setBootstrapped(true);
-      }
-    };
-    bootstrap();
-  }, [projectId, bootstrapped]);
-
   // Hook을 통한 데이터 관리
-  const { fetchSnapshots } = useSnapshotTree({
-    gameName: gameTitle,
-    projectId,
-  });
-  const { fetchGameData } = useGameData({ gameName: gameTitle, projectId });
-  const { fetchAssets } = useAssets({ gameName: gameTitle, projectId });
+  const targetCtx = { projectId, gameName: gameTitle };
+  const { fetchSnapshots } = useSnapshotTree(targetCtx);
+  const { fetchGameData } = useGameData(targetCtx);
+  const { fetchAssets } = useAssets(targetCtx);
 
   // 로컬 상태 관리
   const [activeTab, setActiveTab] = useState("data"); // game, assets, history, data
@@ -111,10 +68,30 @@ const GameStudio = () => {
   const [isMuted, setIsMuted] = useState(false);
   const chatAddMessageRef = useRef(null);
   const [gameErrorBatch, setGameErrorBatch] = useState(null);
+  const [reloadToken, setReloadToken] = useState(0); // 게임 iframe 리로드용
+
+  useEffect(() => {
+    const ensureProject = async () => {
+      if (!projectId && gameTitle) {
+        try {
+          const res = await quadrakillAdapter.projects.resolve(gameTitle, {
+            create: true,
+            userId: "user-1",
+          });
+          if (res?.data?.id) {
+            setProjectId(res.data.id);
+          }
+        } catch (err) {
+          console.warn("프로젝트 resolve 실패:", err);
+        }
+      }
+    };
+    ensureProject();
+  }, [projectId, gameTitle, setProjectId]);
 
   // 페이지 로드 시 백엔드에서 데이터 불러오기
   useEffect(() => {
-    if (!projectId) return; // projectId 없으면 로드 대기
+    if (!projectId) return; // 식별자 없으면 대기
 
     const loadInitialData = async () => {
       try {
@@ -158,8 +135,8 @@ const GameStudio = () => {
     chatAddMessageRef.current = addMessageFn;
   };
 
-  // 쿼리 파라미터가 모두 없으면 안내 화면 표시 (projectId 또는 gameName 둘 중 하나만 있어도 진행)
-  if (!gameNameFromUrl && !projectIdFromUrl && !projectId) {
+  // 식별자가 없으면 안내 화면 표시
+  if (!projectId) {
     return (
       <div
         style={{
@@ -173,9 +150,9 @@ const GameStudio = () => {
         }}
       >
         <h2>게임을 선택해주세요</h2>
-        <p>URL에 게임 이름을 쿼리 파라미터로 전달해주세요.</p>
+        <p>projectId를 쿼리로 전달하거나 제목을 입력해 생성해주세요.</p>
         <p style={{ color: "#000000ff", fontSize: "14px" }}>
-          예: /gamestudio?gameName=my_game
+          예: /gamestudio?projectId=UUID
         </p>
       </div>
     );
@@ -207,11 +184,9 @@ const GameStudio = () => {
     setGameErrorBatch(null);
   };
 
-  useEffect(() => {
-    if (projectId && gameData && Object.keys(gameData || {}).length === 0) {
-      setGameData({ value: "" });
-    }
-  }, [projectId, gameData, setGameData]);
+  const handleGameReload = () => {
+    setReloadToken((prev) => prev + 1);
+  };
 
   // 복사: iframe src를 우선으로, 없으면 현재 페이지 URL을 복사
   const handleCopyLink = async () => {
@@ -245,27 +220,16 @@ const GameStudio = () => {
       <Header />
       <header className="studio-header">
         <div className="header-left">
-          <label className="visually-hidden" htmlFor="project-selector">
-            프로젝트 선택
-          </label>
-          <select
-            id="project-selector"
-            role="combobox"
-            aria-label="프로젝트 선택"
-            className="project-select"
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-          >
-            <option value={projectId || ""}>
-              {projectId || "프로젝트 선택"}
-            </option>
-          </select>
           <input
             type="text"
             className="game-title-input"
             value={gameTitle}
             onChange={(e) => setGameTitle(e.target.value)}
+            placeholder="게임 제목"
           />
+          <div className="project-id-label">
+            projectId: {projectId || "없음"}
+          </div>
         </div>
         <div className="header-right">
           <button className="btn-secondary">임시 저장</button>
@@ -298,7 +262,7 @@ const GameStudio = () => {
           <div className="tab-content">
             {activeTab === "game" && (
               <GameRunner
-                iframeSrc={`http://localhost:8080/${gameTitle}/`}
+                projectId={projectId}
                 isMuted={isMuted}
                 onToggleMute={() => setIsMuted((m) => !m)}
                 onCopyLink={handleCopyLink}
@@ -306,6 +270,7 @@ const GameStudio = () => {
                   /* can be used for additional tracking */
                 }}
                 onErrorBatch={handleErrorBatch}
+                reloadToken={reloadToken}
               />
             )}
             {activeTab === "assets" && (
@@ -323,50 +288,21 @@ const GameStudio = () => {
             {activeTab === "history" && (
               <div className="history-panel">
                 <SnapshotTree
-                  gameName={gameTitle}
                   projectId={projectId}
+                  gameName={gameTitle}
                   showImportExport={false}
                 />
               </div>
             )}
             {activeTab === "data" && (
               <div className="data-panel">
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 16,
-                    alignItems: "center",
-                    marginBottom: 8,
-                  }}
-                >
-                  <div>
-                    <strong>버전</strong>
-                    <div style={{ fontSize: 12 }}>
-                      총 {snapshots?.length || 0}개
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#555" }}>
-                    projectId: {projectId || "미설정"}
-                  </div>
-                </div>
                 <DataEditor
                   data={gameData}
                   onDataChange={setGameData}
                   gameName={gameTitle}
-                  projectId={projectId}
                   showImportExport={false}
                   hiddenTopLevelKeys={["assets"]}
                 />
-                <div style={{ marginTop: 16 }}>
-                  <AssetManager
-                    onPromptSubmit={handlePromptSubmit}
-                    onSnapshotUpdate={(data) => {
-                      if (data && data.versions) {
-                        setSnapshots(data.versions);
-                      }
-                    }}
-                  />
-                </div>
               </div>
             )}
           </div>
@@ -383,6 +319,7 @@ const GameStudio = () => {
           onReady={handleChatReady}
           gameErrorBatch={gameErrorBatch}
           onErrorBatchHandled={handleErrorBatchHandled}
+          onGameReload={handleGameReload}
         />
       </div>
       {/* asset modal moved to AssetManager component */}

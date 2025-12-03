@@ -5,15 +5,11 @@ import React, { createContext, useContext, useState } from "react";
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const [gameTitle, setGameTitle] = useState("sy_3d_dddd4");
+  const [gameTitle, setGameTitle] = useState("");
   const [projectId, setProjectId] = useState("");
   const [gameData, setGameData] = useState({});
   const [snapshots, setSnapshots] = useState([]);
-  const [assets, setAssets] = useState([
-    { id: 1, type: "image", name: "background", src: "/images/background.svg" },
-    { id: 2, type: "image", name: "logo", src: "/images/logo.png" },
-    { id: 3, type: "sound", name: "bgm", src: "" },
-  ]);
+  const [assets, setAssets] = useState([]);
   const [assetStamp, setAssetStamp] = useState(Date.now());
 
   return (

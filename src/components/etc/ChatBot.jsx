@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./ChatBot.css";
 import {
   sendErrorBatch,
@@ -14,7 +14,6 @@ function ChatBot({
   onGameDataUpdate,
   loadedChat,
   gameName,
-  projectId,
   gameErrorBatch,
   onErrorBatchHandled,
 }) {
@@ -25,11 +24,6 @@ function ChatBot({
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  const target = useMemo(
-    () => ({ gameName, projectId }),
-    [gameName, projectId],
-  );
 
   useEffect(() => {
     scrollToBottom();
@@ -62,7 +56,7 @@ function ChatBot({
     // async 함수 정의 후 즉시 실행
     const sendError = async () => {
       try {
-        await sendErrorBatch(target, gameErrorBatch);
+        await sendErrorBatch(gameName, gameErrorBatch);
         console.log("✅ FastAPI 서버로 에러 전송 성공");
       } catch (error) {
         console.error("❌ FastAPI 서버로 에러 전송 실패:", error);
@@ -74,12 +68,12 @@ function ChatBot({
     };
 
     sendError();
-  }, [gameErrorBatch, onErrorBatchHandled, target]);
+  }, [gameErrorBatch, onErrorBatchHandled, gameName]);
 
   // 공통: 스냅샷 로그 및 게임 데이터 최신화
   const refreshSnapshotAndGameData = async () => {
     try {
-      const snapRes = await getSnapshotLog(target);
+      const snapRes = await getSnapshotLog(gameName);
       const data = snapRes?.data;
       if (data && onSnapshotUpdate) {
         onSnapshotUpdate(data);
@@ -88,9 +82,9 @@ function ChatBot({
       console.warn("스냅샷 로그 가져오기 실패:", snapErr);
     }
     // 이어서 게임 데이터 갱신
-    if (onGameDataUpdate && (gameName || projectId)) {
+    if (onGameDataUpdate && gameName) {
       try {
-        const res = await getGameData(target);
+        const res = await getGameData(gameName);
         const payload = res?.data;
         if (payload && typeof payload === "object") {
           onGameDataUpdate(payload);
@@ -105,7 +99,7 @@ function ChatBot({
 
   const handleRevert = async () => {
     try {
-      const response = await revertGame(target);
+      const response = await revertGame(gameName);
 
       const botMessage = {
         text: response.data.reply || "이전 상태로 되돌렸습니다.",
@@ -137,15 +131,15 @@ function ChatBot({
     setMessages((prev) => [...prev, tempBotMessage]);
 
     try {
-      const response = await processCodeMessage(messageText, target);
+      const response = await processCodeMessage(messageText, gameName);
 
       if (response.data.status === "success") {
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === tempBotMessage.id
               ? { text: response.data.reply, sender: "bot" }
-              : msg,
-          ),
+              : msg
+          )
         );
         await refreshSnapshotAndGameData();
       } else {
@@ -153,8 +147,8 @@ function ChatBot({
           prev.map((msg) =>
             msg.id === tempBotMessage.id
               ? { text: "서버 오류: " + response.data.reply, sender: "bot" }
-              : msg,
-          ),
+              : msg
+          )
         );
       }
     } catch (error) {

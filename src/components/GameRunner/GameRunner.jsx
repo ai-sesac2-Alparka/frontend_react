@@ -3,65 +3,27 @@ import PropTypes from "prop-types";
 import "./GameRunner.css";
 
 const GameRunner = ({
-  iframeSrc,
+  projectId,
   isMuted,
   onToggleMute,
   onCopyLink,
   onFullscreen,
   reloadToken = 0,
   onErrorBatch = null,
+  onRefresh = null,
 }) => {
-  const gameFrameRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // reloadToken이 변경되면 에러 상태 초기화
   useEffect(() => {
     setLoadError(false);
-    setIsLoading(true);
-  }, [reloadToken, iframeSrc]);
-
-  // iframe 메시지 수신 처리
-  useEffect(() => {
-    const handleIframeMessage = (event) => {
-      const data = event.data;
-
-      // error-report 메시지 처리
-      if (
-        data &&
-        data.source === "alparka-game-iframe" &&
-        data.type === "error-report"
-      ) {
-        const errorData = data.payload;
-        console.error("🚨 IFRAME 오류 수신:", errorData);
-      }
-
-      // error-batch 메시지 처리
-      if (
-        data &&
-        data.source === "alparka-game-iframe" &&
-        data.type === "error-batch"
-      ) {
-        const batchData = data.payload;
-        console.error("🚨 IFRAME 에러 배치 수신:", batchData);
-
-        if (typeof onErrorBatch === "function") {
-          onErrorBatch(batchData);
-        }
-      }
-    };
-
-    window.addEventListener("message", handleIframeMessage);
-
-    return () => {
-      window.removeEventListener("message", handleIframeMessage);
-    };
-  }, [onErrorBatch]);
+    setIsLoading(false);
+  }, [reloadToken, projectId]);
 
   // 부모에서 전달된 핸들러로 동일 동작 유지
   const handleCopy = async () => {
-    const iframe = gameFrameRef.current;
-    const link = iframe?.src || window.location.href;
+    const link = window.location.href;
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(link);
@@ -82,32 +44,40 @@ const GameRunner = ({
   };
 
   const handleFullscreen = () => {
-    const iframe = gameFrameRef.current;
-    if (!iframe) return;
-    const el = iframe;
+    const el = canvasRef.current;
+    if (!el) return;
     if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     else if (el.msRequestFullscreen) el.msRequestFullscreen();
-
     if (onFullscreen) onFullscreen();
   };
 
-  const handleIframeLoad = () => {
-    setIsLoading(false);
-    setLoadError(false);
-  };
-
-  const handleIframeError = () => {
-    setIsLoading(false);
-    setLoadError(true);
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      // 기본 동작: iframe 새로고침
+      const iframe = gameFrameRef.current;
+      if (iframe) {
+        setIsLoading(true);
+        setLoadError(false);
+        const currentSrc = iframe.src;
+        iframe.src = currentSrc;
+      }
+    }
   };
 
   return (
     <div className="game-container">
       <div className="game-toolbar">
         <div className="toolbar-left">
-          <span className="status-dot">●</span> Running
+          <button
+            className="tool-btn refresh-btn"
+            onClick={handleRefresh}
+            title="새로고침"
+          >
+            🔄
+          </button>
         </div>
         <div className="toolbar-right">
           <button className="tool-btn" onClick={onToggleMute}>
@@ -177,39 +147,38 @@ const GameRunner = ({
         </div>
       )}
 
-      <iframe
-        key={reloadToken}
-        ref={gameFrameRef}
+      <canvas
+        ref={canvasRef}
         className="game-frame"
-        src={iframeSrc}
-        title="Game Preview"
-        onLoad={handleIframeLoad}
-        onError={handleIframeError}
-        allowFullScreen
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-        style={{
-          display: loadError ? "none" : "block",
-        }}
+        aria-label="game-canvas"
+        style={{ background: "#0b0b0b", color: "#fff" }}
       />
+      <div className="game-overlay">
+        <div style={{ color: "#fff", fontSize: 14 }}>
+          projectId: {projectId || "없음"} — 프리뷰는 추후 엔진 연동 예정
+        </div>
+      </div>
     </div>
   );
 };
 
 GameRunner.propTypes = {
-  iframeSrc: PropTypes.string,
+  projectId: PropTypes.string,
   isMuted: PropTypes.bool,
   onToggleMute: PropTypes.func,
   onCopyLink: PropTypes.func,
   onFullscreen: PropTypes.func,
   reloadToken: PropTypes.number,
   onErrorBatch: PropTypes.func,
+  onRefresh: PropTypes.func,
 };
 
 GameRunner.defaultProps = {
-  iframeSrc: "http://localhost:8080/",
+  projectId: "",
   isMuted: false,
   reloadToken: 0,
   onErrorBatch: null,
+  onRefresh: null,
 };
 
 export default GameRunner;

@@ -26,8 +26,19 @@ export const quadrakillAdapter = {
       quadrakillApi.post("/wizard/draft/", { prompt, tags }),
     plan: (userQuery) =>
       quadrakillApi.post("/wizard/plan/", { user_query: userQuery }),
-    construct: (options, platform = "3d") =>
-      quadrakillApi.post("/wizard/construct/", { options, platform }),
+    construct: (
+      options,
+      platform = "3d",
+      thinkingLevel = "LOW",
+      fallbackBudget = 2048,
+    ) =>
+      quadrakillApi.post("/wizard/construct/", {
+        options,
+        platform,
+        thinking_config: { thinkingLevel },
+        // Gemini 3.x는 thinkingLevel만 허용. 오류 시 budget 폴백을 위해 서버가 무시하도록 별도 필드 유지.
+        budget: fallbackBudget,
+      }),
   },
   ai2d: {
     spriteSheet: (prompt, style = "pixel", worldType) =>
@@ -58,10 +69,28 @@ export const quadrakillAdapter = {
         },
       }),
     draft: (projectId) => quadrakillApi.get(`/projects/${projectId}/draft`),
+    updateDraft: (projectId, workingData, chatHistory = null) =>
+      quadrakillApi.put(`/projects/${projectId}/draft`, {
+        working_data: workingData,
+        chat_history: chatHistory,
+      }),
     bootstrap: (projectId) =>
       quadrakillApi.post(`/projects/${projectId}/bootstrap`),
   },
   assets: {
+    list: ({ projectId, gameName }) => {
+      if (projectId) {
+        return quadrakillApi.get("/assets", {
+          params: { project_id: projectId },
+          headers: { Accept: "application/json" },
+        });
+      }
+      // Fallback: legacy gameName if 없는 경우
+      return backendApi.get("/assets", {
+        params: { game_name: gameName || "", _t: Date.now() },
+        headers: { Accept: "application/json", "Cache-Control": "no-cache" },
+      });
+    },
     upload: ({ file, type = "raw", projectId, name }) => {
       const form = new FormData();
       form.append("file", file);
@@ -123,17 +152,8 @@ export const quadrakillAdapter = {
         headers: { "Cache-Control": "no-cache" },
       });
     },
-    assets: (target) => {
-      const ctx = normalizeLegacyTarget(target);
-      return backendApi.get("/assets", {
-        params: {
-          game_name: ctx.gameName || "",
-          project_id: ctx.projectId,
-          _t: Date.now(),
-        },
-        headers: { Accept: "application/json", "Cache-Control": "no-cache" },
-      });
-    },
+    assets: (target) =>
+      quadrakillAdapter.assets.list(normalizeLegacyTarget(target)),
     dataUpdate: (target, dataOverride) => {
       const ctx = normalizeLegacyTarget(target);
       const data = dataOverride ?? ctx.data;

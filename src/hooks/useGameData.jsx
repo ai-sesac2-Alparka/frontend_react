@@ -7,40 +7,22 @@ import {
 } from "../api/backend";
 
 const normalizeTarget = (target) => {
-  if (typeof target === "string") {
-    return { projectId: undefined, gameName: target || "" };
-  }
-  if (!target) {
-    return { projectId: undefined, gameName: "" };
-  }
+  if (typeof target === "string")
+    return { projectId: target || "", gameName: "" };
+  if (!target) return { projectId: "", gameName: "" };
   return {
-    projectId: target.projectId || target.project_id,
-    gameName:
-      target.gameName ||
-      target.game_name ||
-      target.projectId ||
-      target.project_id ||
-      "",
+    projectId: target.projectId || target.project_id || "",
+    gameName: target.gameName || target.game_name || "",
   };
 };
 
-/**
- * GameData(게임 설정 데이터)를 관리하는 Custom Hook
- * - 게임 데이터 조회
- * - 게임 데이터 저장 및 갱신
- * - 스냅샷 로그 자동 동기화
- * - 여러 컴포넌트에서 재사용 가능
- */
 export const useGameData = (target) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const ctx = useMemo(() => normalizeTarget(target), [target]);
 
-  /**
-   * 게임 데이터를 서버에서 가져오기
-   */
   const fetchGameData = useCallback(async () => {
-    if (!ctx.gameName && !ctx.projectId) return null;
+    if (!ctx.projectId && !ctx.gameName) return null;
 
     setLoading(true);
     setError(null);
@@ -48,13 +30,12 @@ export const useGameData = (target) => {
     try {
       const response = await getGameData(ctx);
       const data = response?.data;
-
       if (data && typeof data === "object") {
+        if (data.working_data) return data.working_data;
         return data;
-      } else {
-        console.warn("게임 데이터 응답 형식이 올바르지 않습니다.");
-        return null;
       }
+      console.warn("게임 데이터 응답 형식이 올바르지 않습니다.");
+      return null;
     } catch (err) {
       console.error("게임 데이터 로드 실패:", err);
       setError(err);
@@ -64,25 +45,19 @@ export const useGameData = (target) => {
     }
   }, [ctx]);
 
-  /**
-   * 게임 데이터를 서버에 저장하고 최신 데이터 및 스냅샷 반환
-   */
   const saveAndRefresh = useCallback(
     async (data) => {
-      if ((!ctx.gameName && !ctx.projectId) || !data) return null;
+      if ((!ctx.projectId && !ctx.gameName) || !data) return null;
 
       setLoading(true);
       setError(null);
 
       try {
-        // 1. 서버에 데이터 업데이트 요청
         await updateGameData(ctx, data);
 
-        // 2. 최신 게임 데이터 재요청
         const response = await getGameData(ctx);
-        const updatedData = response?.data;
+        const updatedData = response?.data?.working_data || response?.data;
 
-        // 3. 스냅샷 로그도 자동 갱신
         let snapshotData = null;
         try {
           const snapResponse = await getSnapshotLog(ctx);
@@ -91,7 +66,6 @@ export const useGameData = (target) => {
           console.warn("스냅샷 로그 갱신 실패:", snapErr);
         }
 
-        // 4. 에셋 데이터도 자동 갱신
         let assetsData = null;
         try {
           const assetsResponse = await getGameAssets(ctx);
@@ -116,16 +90,13 @@ export const useGameData = (target) => {
     [ctx],
   );
 
-  /**
-   * 수동으로 게임 데이터 갱신
-   */
   const refreshGameData = fetchGameData;
 
   return {
-    loading, // 로딩 상태
-    error, // 에러 객체
-    fetchGameData, // 게임 데이터 조회
-    saveAndRefresh, // 데이터 저장 + 자동 갱신 (gameData, snapshots, assets 반환)
-    refreshGameData, // 수동 갱신
+    loading,
+    error,
+    fetchGameData,
+    saveAndRefresh,
+    refreshGameData,
   };
 };
