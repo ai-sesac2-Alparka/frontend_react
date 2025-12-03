@@ -2,21 +2,24 @@
 
 .game-play-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #1A0B2E 0%, #26104C 100%);
+  background: #7C3AED;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: white;
-  font-family: 'Paperlogy-4Regular', sans-serif;
+  font-family: 'Paperlogy-4', sans-serif;
 }
 
 .play-container {
   width: 100%;
-  max-width: 1200px;
-  padding: 40px 20px;
+  /* reduce overall width so more fits vertically on smaller viewports */
+  max-width: 1000px;
+  /* push content down to avoid header overlap (header assumed ~64-80px tall) */
+  margin-top: 80px;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 /* --- 게임 화면 영역 --- */
@@ -32,9 +35,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 25px;
-  background-color: #1f1235;
-  border-bottom: 1px solid #3a1c6e;
+  padding: 10px 16px;
+  /* header bar set to white per request */
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
 .game-title {
@@ -49,12 +53,15 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: bold;
+  transform: translateY(4px);
 }
 
 .game-title h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-family: 'Paperlogy-7Bold', sans-serif;
+  color: #000000; /* make title text black */
+  transform: translateY(6px);
 }
 
 .game-controls {
@@ -79,7 +86,8 @@
 .iframe-container {
   width: 100%;
   height: 0;
-  padding-bottom: 56.25%; /* 16:9 비율 유지 */
+  /* slightly taller aspect to keep visible area but reduce vertical space usage */
+  padding-bottom: 45%; /* reduced from 56.25% to shrink vertical size */
   position: relative;
   background-color: black;
 }
@@ -122,8 +130,8 @@
 }
 
 .profile-img {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background-color: #ddd; /* 더미 이미지 */
   background-image: url('https://via.placeholder.com/40');
@@ -138,11 +146,13 @@
 .creator-name {
   font-weight: bold;
   font-size: 16px;
+  font-family: 'Paperlogy-5', sans-serif;
 }
 
 .upload-date {
   font-size: 12px;
   color: #aaa;
+  font-family: 'Paperlogy-5', sans-serif;
 }
 
 /* 좋아요 버튼 */
@@ -152,7 +162,7 @@
   gap: 8px;
   background-color: #3a1c6e;
   border: 2px solid transparent;
-  padding: 10px 24px;
+  padding: 8px 18px;
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s;
@@ -169,13 +179,14 @@
 }
 
 .heart-icon {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .like-count {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   color: white;
+  font-family: 'Paperlogy-5', sans-serif;
 }
 
 /* 수정하기(리믹스) 버튼 */
@@ -186,9 +197,10 @@
   background-color: #7C3AED;
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 8px 16px;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 14px;
+  font-family: 'Paperlogy-5', sans-serif;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;

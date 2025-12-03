@@ -4,9 +4,8 @@ import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./GameGenerating.css";
 
-// public/images 폴더에 loading.gif가 있다고 가정합니다.
-// 만약 src 내부에 있다면 import loadingGif from '../../assets/loading.gif' 식으로 변경해야 합니다.
-const loadingGif = "/images/loading.gif"; 
+// public/images 폴더의 gamegenerating.gif 사용
+const loadingGif = "/images/gamegenerating.gif";
 
 const GameGenerating = () => {
   const navigate = useNavigate();

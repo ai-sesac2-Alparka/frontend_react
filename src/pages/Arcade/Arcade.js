@@ -3,14 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header'; // 기존 헤더 컴포넌트 임포트
 import './Arcade.css';
 
-// 이미지 에셋 (없을 경우를 대비해 텍스트/이모지로 대체 가능하도록 구조화)
-// 실제 프로젝트에서는 import 구문을 사용해 이미지를 불러오세요.
-const assets = {
-  filterIcon: '/images/filter-alt.svg', // public 폴더 기준 예시
-  fireEmoji: '🔥',
-  starIcon: '⭐'
-};
-
 // 더미 데이터: 카테고리
 const CATEGORIES = [
   { id: 'all', name: '전체 보기', icon: '🕹️' },
@@ -72,26 +64,11 @@ const Arcade = () => {
       {/* 2. 트렌드 배너 — 헤더 바로 아래 풀 폭 배치 */}
       <section className="trend-banner full-width">
         <div className="trend-info">
-          <div className="trend-badge">
-            <span className="badge-text">HOT TREND</span>
-          </div>
-          <h1 className="trend-title">이런 게임은<br />어떠신가요?</h1>
+          <div className="trend-badge" />
+          <h1 className="trend-title">HOT🔥<br />TREND</h1>
           <p className="trend-desc">{TREND_GAME.description}</p>
         </div>
-        <div className="trend-action">
-          <div className="trend-game-meta trend-meta--wide">
-            <div className="fire-icon-box">
-              <span className="fire-emoji">{assets.fireEmoji}</span>
-            </div>
-            <div className="meta-text meta-text--stacked">
-              <h3 className="game-title">{TREND_GAME.title}</h3>
-              <span className="game-author">by {TREND_GAME.author} • 플레이 {TREND_GAME.plays}</span>
-              <div className="meta-cta">
-                <button className="play-now-btn" onClick={() => navigate(`/play/${TREND_GAME.id}`)}>지금 플레이</button>
-              </div>
-            </div>
-          </div>
-        </div>
+  {/* trend-action removed per request */}
       </section>
 
       <div className="arcade-content-container">
@@ -142,14 +119,7 @@ const Arcade = () => {
                   <div className="game-thumbnail" style={{ backgroundColor: game.thumbnail }} />
                   <div className="game-info">
                     <h3 className="card-title">{game.title}</h3>
-                    <div className="card-meta">
-                      <div className="rating-dots">
-                        {/* 디자인에 있는 점 3개 (난이도나 평점 표현) */}
-                        <span className="dot" />
-                        <span className="dot" />
-                        <span className="dot" />
-                      </div>
-                    </div>
+                    <div className="card-meta" />
                   </div>
                 </div>
               ))

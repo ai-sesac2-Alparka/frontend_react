@@ -20,14 +20,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 20px 12px;
 }
 
 .login-card {
   background-color: #ffffff;
   width: 100%;
   max-width: 480px;
-  padding: 40px;
+  padding: 24px;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -37,14 +37,14 @@
 
 .login-title {
   font-family: "Paperlogy-7Bold", sans-serif;
-  font-size: 32px;
+  font-size: 26px;
   color: #1a0b2e;
   margin-bottom: 10px;
 }
 
 .login-subtitle {
   font-family: "Paperlogy-4Regular", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   color: #666;
   margin-bottom: 30px;
   text-align: center;
@@ -54,7 +54,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .form-group {
@@ -73,8 +73,8 @@
   padding: 12px 15px;
   border-radius: 10px;
   border: 1px solid #ddd;
-  font-family: "Paperlogy-4Regular", sans-serif;
-  font-size: 15px;
+  font-family: "Paperlogy-4", sans-serif;
+  font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
 }
@@ -88,10 +88,10 @@
   background-color: #7c3aed;
   color: white;
   border: none;
-  padding: 15px;
+  padding: 12px;
   border-radius: 12px;
   font-family: "Paperlogy-7Bold", sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -103,8 +103,8 @@
 /* 간편 로그인 섹션 (SignUp.css와 동일 스타일) */
 .social-login-section {
   width: 100%;
-  margin-top: 25px;
-  margin-bottom: 10px;
+  margin-top: 16px;
+  margin-bottom: 8px;
 }
 
 .divider {
@@ -112,7 +112,7 @@
   align-items: center;
   text-align: center;
   color: #888;
-  font-size: 13px;
+  font-size: 12px;
   font-family: "Paperlogy-4Regular", sans-serif;
   margin-bottom: 20px;
 }
@@ -136,11 +136,11 @@
 
 .social-btn {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   border-radius: 10px;
   border: none;
   font-family: "Paperlogy-5Medium", sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -154,8 +154,8 @@
 
 .social-icon {
   font-weight: bold;
-  margin-right: 10px;
-  font-size: 18px;
+  margin-right: 8px;
+  font-size: 16px;
 }
 
 .btn-google { background-color: #ffffff; border: 1px solid #ddd; color: #333; }
@@ -165,9 +165,9 @@
 .btn-naver { background-color: #03C75A; color: white; }
 
 .signup-link {
-  margin-top: 25px;
-  font-family: "Paperlogy-4Regular", sans-serif;
-  font-size: 14px;
+  margin-top: 14px;
+  font-family: "Paperlogy-4", sans-serif;
+  font-size: 13px;
   color: #666;
 }
 

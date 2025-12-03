@@ -27,8 +27,14 @@
 }
 
 .logo-image {
-    height: 26px; /* slightly smaller to match reduced header */
+    height: 20px; /* reduced size per request */
     width: auto;
+}
+
+/* Ensure header logo overrides global or page-specific logo sizing */
+.header .logo-image {
+    height: 25px !important;
+    width: auto !important;
 }
 
 .header-actions {
@@ -65,16 +71,18 @@
 
 .btn-signup,
 .btn-login {
-    padding: 8px 18px;
+    padding: 4px 20px; /* further reduced padding */
     background: #ffffff;
     color: #3A1C6E;
     border: 1px solid rgba(0,0,0,0.06);
-    border-radius: 30px;
+    border-radius: 50px; /* slightly smaller pill */
     font-family: 'Gmarket Sans TTF', var(--font-button);
-    font-size: 16px;
+    font-size: 14px; /* smaller text */
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.18s ease;
+    min-width: 0; /* allow shrink */
+    width: auto;
 }
 
 /* hover 효과들 */

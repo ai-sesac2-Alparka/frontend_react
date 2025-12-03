@@ -25,6 +25,82 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <style>
+      /* Load PyeongChangPeace from public/fonts without bundler resolving */
+      @font-face {
+        font-family: 'PyeongChangPeace';
+        src: url('%PUBLIC_URL%/fonts/PyeongChangPeace-Light.ttf') format('truetype');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'PyeongChangPeace';
+        src: url('%PUBLIC_URL%/fonts/PyeongChangPeace-Bold.ttf') format('truetype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      /* alias family used in some CSS files */
+      @font-face {
+        font-family: 'PyeongChangPeace-Bold';
+        src: url('%PUBLIC_URL%/fonts/PyeongChangPeace-Bold.ttf') format('truetype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      /* Paperlogy family variants used across the app */
+      @font-face {
+        font-family: 'Paperlogy-2ExtraLight';
+        src: url('%PUBLIC_URL%/fonts/Paperlogy-2ExtraLight.ttf') format('truetype');
+        font-weight: 200;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Paperlogy-3Light';
+        src: url('%PUBLIC_URL%/fonts/Paperlogy-3Light.ttf') format('truetype');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Paperlogy-4';
+        src: url('%PUBLIC_URL%/fonts/Paperlogy-4Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Paperlogy-5';
+        src: url('%PUBLIC_URL%/fonts/Paperlogy-5Medium.ttf') format('truetype');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Paperlogy-6SemiBold';
+        src: url('%PUBLIC_URL%/fonts/Paperlogy-6SemiBold.ttf') format('truetype');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Paperlogy-7Bold';
+        src: url('%PUBLIC_URL%/fonts/Paperlogy-7Bold.ttf') format('truetype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      /* Load HS산토끼체 2.0 */
+      @font-face {
+        font-family: 'HSSanTokki2';
+        src: url('%PUBLIC_URL%/fonts/HSSanTokki2.0(2024).ttf') format('truetype');
+        font-weight: 300 700;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

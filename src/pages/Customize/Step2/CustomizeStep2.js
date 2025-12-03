@@ -97,8 +97,9 @@ const CustomizeStep2 = () => {
       }
     });
 
-    console.log("최종 프롬프트:", finalPrompt);
-    navigate("/gamestudio", { state: { finalPrompt } });
+  console.log("최종 프롬프트:", finalPrompt);
+  // 먼저 생성 중 화면으로 이동시킨 후 GameGenerating에서 스튜디오로 이동하도록 함
+  navigate("/game/generating", { state: { finalPrompt } });
   };
 
   const handleBack = () => {
@@ -120,13 +121,12 @@ const CustomizeStep2 = () => {
             </div>
 
             <h1 className="panel-title">최종 주문서</h1>
-            <h2 className="panel-subtitle">🤖 이렇게 만들면 될까요?</h2>
 
             <div className="order-display-area">
               <p className="order-text">{pText}</p>
             </div>
             
-            <p className="warning-text">텍스트 수정은 이전 단계에서만 가능해요</p>
+            <p className="warning-text">텍스트 수정은 이전 단계에서만 가능해요!</p>
 
             {/* 생성 버튼 */}
             <div className="create-btn" onClick={handleCreate}>

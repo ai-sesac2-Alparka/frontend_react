@@ -13,46 +13,17 @@
 
 /* 로고 */
 .logo-wrapper {
-    animation: fadeInUp 1s ease-out;
+    animation: logoFloat 2.8s ease-in-out infinite;
 }
 
 .logo-image {
-    width: 200px;
+    width: 340px; /* increased size */
     height: auto;
     filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
 }
 
 /* 로딩 인디케이터 */
-.loading-indicator {
-    display: flex;
-    gap: 12px;
-    margin-top: 40px;
-}
-
-.loading-dot {
-    width: 12px;
-    height: 12px;
-    background: #A3E635;
-    border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out;
-}
-
-.loading-dot:nth-child(1) {
-    animation-delay: -0.32s;
-}
-
-.loading-dot:nth-child(2) {
-    animation-delay: -0.16s;
-}
-
-/* 로딩 텍스트 */
-.loading-text {
-    margin-top: 20px;
-    color: white;
-    font-size: 18px;
-    font-weight: 500;
-    animation: pulse 2s ease-in-out infinite;
-}
+/* loading indicator removed */
 
 /* 애니메이션 */
 @keyframes fadeInUp {
@@ -63,6 +34,21 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes logoFloat {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-16px) scale(1.04);
+        opacity: 0.98;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
     }
 }
 

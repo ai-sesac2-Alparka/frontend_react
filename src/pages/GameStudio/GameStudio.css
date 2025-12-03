@@ -87,14 +87,14 @@
 
 .tab-menu {
   display: flex;
-  background-color: #1f1235;
+  background-color: #ffffff; /* changed to white per request */
   padding: 0 10px;
 }
 
-.tab-btn {
+.tab-menu .tab-btn {
   background: none;
   border: none;
-  color: #8b8b8b;
+  color: #000000 !important; /* enforce black */
   padding: 12px 20px;
   cursor: pointer;
   font-size: 16px;
@@ -102,8 +102,8 @@
   border-bottom: 3px solid transparent;
 }
 
-.tab-btn.active {
-  color: white;
+.tab-menu .tab-btn.active {
+  color: #3A1C6E !important; /* enforce active color */
   border-bottom-color: #7c3aed;
 }
 
