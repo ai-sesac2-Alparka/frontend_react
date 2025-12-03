@@ -120,6 +120,11 @@ export const revertGame = (gameName) => {
   });
 };
 
+// 고유 ID 가져오기
+export const getUniqueId = () => {
+  return backendApi.get("/get-unique-id");
+};
+
 // 코드 메시지 처리 요청
 export const processCodeMessage = (message, gameName) => {
   return backendApi.post("/process-code", {
