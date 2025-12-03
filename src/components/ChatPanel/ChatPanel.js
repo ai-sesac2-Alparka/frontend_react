@@ -18,19 +18,14 @@ export default function ChatPanel({
   onErrorBatchHandled = null,
   onGameReload = null,
 }) {
-  const { 
-    gameTitle, 
-    setGameData, 
-    setSnapshots, 
-    setAssets, 
-    setAssetStamp 
-  } = useGame();
-  
+  const { gameTitle, setGameData, setSnapshots, setAssets, setAssetStamp } =
+    useGame();
+
   // Hooks 사용 - 각 탭의 데이터를 갱신하기 위해
   const { fetchSnapshots } = useSnapshotTree(gameTitle);
   const { fetchGameData } = useGameData(gameTitle);
   const { fetchAssets } = useAssets(gameTitle);
-  
+
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);

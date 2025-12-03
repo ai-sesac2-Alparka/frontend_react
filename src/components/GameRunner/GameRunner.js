@@ -123,8 +123,8 @@ const GameRunner = ({
     <div className="game-container">
       <div className="game-toolbar">
         <div className="toolbar-left">
-          <button 
-            className="tool-btn refresh-btn" 
+          <button
+            className="tool-btn refresh-btn"
             onClick={handleRefresh}
             title="새로고침"
           >
