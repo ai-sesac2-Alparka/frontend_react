@@ -6,6 +6,7 @@ const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
   const [gameTitle, setGameTitle] = useState("sy_3d_dddd4");
+  const [projectId, setProjectId] = useState("");
   const [gameData, setGameData] = useState({});
   const [snapshots, setSnapshots] = useState([]);
   const [assets, setAssets] = useState([
@@ -20,6 +21,8 @@ export const GameProvider = ({ children }) => {
       value={{
         gameTitle,
         setGameTitle,
+        projectId,
+        setProjectId,
         gameData,
         setGameData,
         snapshots,

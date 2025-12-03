@@ -204,6 +204,7 @@ const NodeEditor = ({
           <select
             value={String(value)}
             onChange={(e) => handleValueChange(e.target.value)}
+            aria-label={label || "value"}
           >
             <option value="true">true</option>
             <option value="false">false</option>
@@ -214,6 +215,7 @@ const NodeEditor = ({
             value={value === undefined || value === null ? "" : value}
             onChange={(e) => handleValueChange(e.target.value)}
             placeholder={type === "number" ? "0" : "value"}
+            aria-label={label || "value"}
           />
         )}
       </div>
@@ -226,10 +228,14 @@ function DataEditor({
   onDataChange,
   showImportExport = true,
   gameName,
+  projectId,
   hiddenTopLevelKeys = [],
 }) {
   const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showMeta, setShowMeta] = useState(false);
+  const [metaFilter, setMetaFilter] = useState("");
+  const [metaTypeFilter, setMetaTypeFilter] = useState("all");
 
   // Context에서 gameData 가져오기 및 업데이트 함수
   const {
@@ -238,10 +244,19 @@ function DataEditor({
     setSnapshots,
     setAssets,
     setAssetStamp,
+    projectId: contextProjectId,
   } = useGame();
 
+  const target = React.useMemo(
+    () => ({
+      gameName,
+      projectId: projectId || contextProjectId,
+    }),
+    [gameName, projectId, contextProjectId],
+  );
+
   // Hook 사용: 게임 데이터 관리 (스냅샷 갱신 포함)
-  const { saveAndRefresh } = useGameData(gameName);
+  const { saveAndRefresh } = useGameData(target);
   // JSON 미리보기 기능 비활성화 (상태 제거)
 
   // Context의 gameData를 우선 사용, 없으면 props의 data 사용
@@ -280,6 +295,28 @@ function DataEditor({
   };
 
   const buildObject = () => effectiveData;
+  const metaEntries =
+    effectiveData && typeof effectiveData === "object" && effectiveData.assets
+      ? [
+          ...(effectiveData.assets.files || []),
+          ...(effectiveData.assets.images || []),
+          ...(effectiveData.assets.sounds || []),
+        ]
+      : [];
+  const filteredMeta = metaEntries.filter((m) => {
+    const textMatch = metaFilter
+      ? JSON.stringify(m).toLowerCase().includes(metaFilter.toLowerCase())
+      : true;
+    const type = (m.asset_type || m.type || "").toLowerCase();
+    const typeMatch =
+      metaTypeFilter === "all" ||
+      (metaTypeFilter === "image" && type.includes("image")) ||
+      (metaTypeFilter === "sound" && type.includes("sound")) ||
+      (metaTypeFilter === "file" &&
+        !type.includes("image") &&
+        !type.includes("sound"));
+    return textMatch && typeMatch;
+  });
 
   const handleExport = () => {
     const dataStr = JSON.stringify(buildObject(), null, 2);
@@ -295,8 +332,8 @@ function DataEditor({
   // 저장 실행 핸들러: Hook을 통한 데이터 저장 및 Context 업데이트
   const handleSave = async () => {
     if (isSaving) return;
-    if (!gameName || !gameName.trim()) {
-      alert("게임 이름을 먼저 입력해주세요.");
+    if (!target.gameName?.trim() && !target.projectId) {
+      alert("게임 또는 프로젝트 식별자가 필요합니다.");
       return;
     }
     if (effectiveData === undefined || effectiveData === null) {
@@ -320,7 +357,7 @@ function DataEditor({
         if (result.assets) {
           // 에셋 데이터를 Context에 맞는 형식으로 변환
           const backendUrl =
-            process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+            import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
           const images = Array.isArray(result.assets.images)
             ? result.assets.images.map((img, idx) => ({
                 id: `img-${idx}`,
@@ -393,12 +430,17 @@ function DataEditor({
           {/* JSON 미리보기 토글 버튼 숨김 */}
           <button
             onClick={handleSave}
-            disabled={isSaving || !gameName?.trim()}
+            disabled={isSaving || (!gameName?.trim() && !target.projectId)}
             title={
-              !gameName?.trim() ? "게임 이름이 필요합니다" : "현재 데이터 저장"
+              !gameName?.trim() && !target.projectId
+                ? "게임 또는 프로젝트 식별자가 필요합니다"
+                : "현재 데이터 저장"
             }
           >
             {isSaving ? "저장 중…" : "변경 내용 저장"}
+          </button>
+          <button onClick={() => setShowMeta((v) => !v)}>
+            {showMeta ? "메타 숨기기" : "메타 보기"}
           </button>
         </div>
       </div>
@@ -411,7 +453,73 @@ function DataEditor({
           hiddenTopLevelKeys={hiddenTopLevelKeys}
         />
       </div>
-      {/* JSON 미리보기 영역 숨김 */}
+      {showMeta && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            background: "#fafafa",
+          }}
+        >
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <strong>자산 메타 보기</strong>
+            <input
+              type="text"
+              placeholder="경로/체크섬/타입 검색"
+              value={metaFilter}
+              onChange={(e) => setMetaFilter(e.target.value)}
+            />
+            <select
+              value={metaTypeFilter}
+              onChange={(e) => setMetaTypeFilter(e.target.value)}
+            >
+              <option value="all">전체</option>
+              <option value="image">이미지</option>
+              <option value="sound">사운드</option>
+              <option value="file">파일</option>
+            </select>
+          </div>
+          <ul style={{ marginTop: 8, maxHeight: 200, overflow: "auto" }}>
+            {filteredMeta.length === 0 && <li>메타 정보가 없습니다.</li>}
+            {filteredMeta.map((m, idx) => (
+              <li key={idx} style={{ fontSize: 12, marginBottom: 6 }}>
+                <div>
+                  <strong>{m.name || m.logical_name || "asset"}</strong>{" "}
+                  {m.asset_type || m.type || ""}
+                </div>
+                {m.storage_path && (
+                  <div>
+                    경로: {m.storage_path}{" "}
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(m.storage_path)
+                      }
+                    >
+                      복사
+                    </button>
+                  </div>
+                )}
+                {m.metadata?.checksum_sha256 && (
+                  <div>
+                    SHA256: {m.metadata.checksum_sha256.slice(0, 12)}…{" "}
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          m.metadata.checksum_sha256,
+                        )
+                      }
+                    >
+                      복사
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

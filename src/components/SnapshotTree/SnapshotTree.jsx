@@ -77,7 +77,11 @@ function layoutTreeVertical(roots, hGap = 110, vGap = 110, margin = 50) {
   return { width, height, nodes: placed, edges: placedEdges };
 }
 
-export default function SnapshotTree({ gameName, showImportExport = true }) {
+export default function SnapshotTree({
+  gameName,
+  projectId,
+  showImportExport = true,
+}) {
   // Context에서 snapshots 가져오기 및 업데이트 함수
   const {
     snapshots: contextSnapshots,
@@ -92,7 +96,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
     versions: hookVersions,
     restoreAndRefresh: restoreSnapshot,
     fetchSnapshots,
-  } = useSnapshotTree(gameName);
+  } = useSnapshotTree({ gameName, projectId });
 
   const [customData, setCustomData] = useState(null);
 
@@ -118,27 +122,27 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
   // 컴포넌트 마운트 시 스냅샷 로드 (Context에 데이터가 없을 때만)
   useEffect(() => {
     if (
-      gameName &&
+      (gameName || projectId) &&
       !customData &&
       (!contextSnapshots || contextSnapshots.length === 0)
     ) {
       fetchSnapshots();
     }
-  }, [gameName, customData, contextSnapshots, fetchSnapshots]);
+  }, [gameName, projectId, customData, contextSnapshots, fetchSnapshots]);
 
   // 외부 data 혹은 업로드 데이터 변화에 따라 versions 상태 갱신
   const effectiveData = useMemo(
     () => (customData ? customData : { versions }),
-    [customData, versions]
+    [customData, versions],
   );
 
   const roots = useMemo(
     () => buildTree(effectiveData?.versions || []),
-    [effectiveData]
+    [effectiveData],
   );
   const { width, height, nodes, edges } = useMemo(
     () => layoutTreeVertical(roots),
-    [roots]
+    [roots],
   );
 
   // Zoom helpers available to UI and event handlers
@@ -152,7 +156,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
     const factor = direction > 0 ? 1.1 : 0.9;
     const next = Math.max(
       MIN_SCALE,
-      Math.min(MAX_SCALE, scaleRef.current * factor)
+      Math.min(MAX_SCALE, scaleRef.current * factor),
     );
     if (next === scaleRef.current) return;
     setScale(next);
@@ -171,7 +175,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
     const preContentY = (wrap.scrollTop + centerY) / scaleRef.current;
     const next = Math.max(
       MIN_SCALE,
-      Math.min(MAX_SCALE, scaleRef.current * factor)
+      Math.min(MAX_SCALE, scaleRef.current * factor),
     );
     if (next === scaleRef.current) return;
     setScale(next);
@@ -568,7 +572,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
                       if (result.snapshots) {
                         console.log(
                           "스냅샷 업데이트:",
-                          result.snapshots.length
+                          result.snapshots.length,
                         );
                         setSnapshots(result.snapshots);
                       }
@@ -580,7 +584,7 @@ export default function SnapshotTree({ gameName, showImportExport = true }) {
                         console.log("에셋 업데이트");
                         // 에셋 데이터를 Context에 맞는 형식으로 변환
                         const backendUrl =
-                          process.env.REACT_APP_BACKEND_URL ||
+                          import.meta.env.VITE_BACKEND_URL ||
                           "http://localhost:8000";
                         const images = Array.isArray(result.assets.images)
                           ? result.assets.images.map((img, idx) => ({

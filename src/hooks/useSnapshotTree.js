@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   getSnapshotLog,
   restoreGameVersion,
@@ -6,28 +6,47 @@ import {
   getGameAssets,
 } from "../api/backend";
 
+const normalizeTarget = (target) => {
+  if (typeof target === "string") {
+    return { projectId: undefined, gameName: target || "" };
+  }
+  if (!target) {
+    return { projectId: undefined, gameName: "" };
+  }
+  return {
+    projectId: target.projectId || target.project_id,
+    gameName:
+      target.gameName ||
+      target.game_name ||
+      target.projectId ||
+      target.project_id ||
+      "",
+  };
+};
+
 /**
  * SnapshotTree 데이터를 관리하는 Custom Hook
  * - 스냅샷 데이터 조회
  * - 버전 복원 및 자동 갱신 (게임 데이터 포함)
  * - 여러 컴포넌트에서 재사용 가능
  */
-export const useSnapshotTree = (gameName) => {
+export const useSnapshotTree = (target) => {
   const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const ctx = useMemo(() => normalizeTarget(target), [target]);
 
   /**
    * 스냅샷 로그를 서버에서 가져와서 상태 갱신
    */
   const fetchSnapshots = useCallback(async () => {
-    if (!gameName) return;
+    if (!ctx.gameName && !ctx.projectId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await getSnapshotLog(gameName);
+      const response = await getSnapshotLog(ctx);
       const data = response?.data;
 
       if (data && Array.isArray(data.versions)) {
@@ -35,7 +54,7 @@ export const useSnapshotTree = (gameName) => {
         return data.versions;
       } else {
         console.warn(
-          "스냅샷 응답 형식이 올바르지 않습니다. { versions: [...] } 예상"
+          "스냅샷 응답 형식이 올바르지 않습니다. { versions: [...] } 예상",
         );
         setVersions([]);
         return [];
@@ -48,7 +67,7 @@ export const useSnapshotTree = (gameName) => {
     } finally {
       setLoading(false);
     }
-  }, [gameName]);
+  }, [ctx]);
 
   /**
    * 특정 버전으로 복원하고 스냅샷 데이터를 자동으로 갱신
@@ -56,17 +75,17 @@ export const useSnapshotTree = (gameName) => {
    */
   const restoreAndRefresh = useCallback(
     async (targetVersion) => {
-      if (!gameName || !targetVersion) return null;
+      if ((!ctx.gameName && !ctx.projectId) || !targetVersion) return null;
 
       setLoading(true);
       setError(null);
 
       try {
         // 1. 서버에 복원 요청
-        await restoreGameVersion(gameName, targetVersion);
+        await restoreGameVersion(ctx, targetVersion);
 
         // 2. 최신 스냅샷 로그 재요청하여 화면 갱신
-        const response = await getSnapshotLog(gameName);
+        const response = await getSnapshotLog(ctx);
         const data = response?.data;
 
         if (data && Array.isArray(data.versions)) {
@@ -74,13 +93,13 @@ export const useSnapshotTree = (gameName) => {
 
           // 복원된 버전 정보 찾기
           const restoredVersion = data.versions.find(
-            (v) => v.version === targetVersion
+            (v) => v.version === targetVersion,
           );
 
           // 3. 게임 데이터도 자동으로 갱신 (스냅샷 복원 후 게임 상태 동기화)
           let gameData = null;
           try {
-            const gameDataResponse = await getGameData(gameName);
+            const gameDataResponse = await getGameData(ctx);
             gameData = gameDataResponse?.data;
           } catch (gdErr) {
             console.warn("게임 데이터 갱신 실패:", gdErr);
@@ -90,7 +109,7 @@ export const useSnapshotTree = (gameName) => {
           // 4. 에셋 데이터도 자동으로 갱신
           let assetsData = null;
           try {
-            const assetsResponse = await getGameAssets(gameName);
+            const assetsResponse = await getGameAssets(ctx);
             assetsData = assetsResponse?.data;
           } catch (assetsErr) {
             console.warn("에셋 갱신 실패:", assetsErr);
@@ -125,7 +144,7 @@ export const useSnapshotTree = (gameName) => {
         setLoading(false);
       }
     },
-    [gameName]
+    [ctx],
   );
 
   /**

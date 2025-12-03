@@ -12,6 +12,7 @@ import { useGame } from "../../contexts/GameContext";
 import { useSnapshotTree } from "../../hooks/useSnapshotTree";
 import { useGameData } from "../../hooks/useGameData";
 import { useAssets } from "../../hooks/useAssets";
+import { quadrakillAdapter } from "../../api/quadrakillAdapter";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -25,30 +26,87 @@ const GameStudio = () => {
   // Context에서 게임 상태 가져오기
   const {
     gameTitle,
+    projectId,
+    setProjectId,
     setGameTitle,
     gameData,
     setGameData,
+    snapshots,
     setSnapshots,
     setAssets,
     setAssetStamp,
   } = useGame();
 
-  // URL 쿼리 파라미터에서 gameName 읽기 및 Context 업데이트
+  // URL 쿼리 파라미터에서 gameName/projectId 읽기 및 Context 업데이트
   const gameNameFromUrl = searchParams.get("gameName");
+  const projectIdFromUrl = searchParams.get("projectId");
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
+    if (projectIdFromUrl && projectIdFromUrl !== projectId) {
+      setProjectId(projectIdFromUrl);
+    }
+    // projectId 우선, gameName은 표시용으로만 사용
     if (gameNameFromUrl && gameNameFromUrl !== gameTitle) {
       setGameTitle(gameNameFromUrl);
+    } else if (projectIdFromUrl && !gameTitle) {
+      setGameTitle(projectIdFromUrl);
     }
-  }, [searchParams, gameTitle, setGameTitle, gameNameFromUrl]);
+  }, [
+    searchParams,
+    gameTitle,
+    setGameTitle,
+    gameNameFromUrl,
+    projectIdFromUrl,
+    projectId,
+    setProjectId,
+  ]);
+
+  // projectId가 없으면 서버에서 resolve/create 시도 (기본 식별자는 projectId)
+  useEffect(() => {
+    const ensureProjectId = async () => {
+      if (projectId || !(gameTitle || gameNameFromUrl)) return;
+      const title = gameTitle || gameNameFromUrl;
+      try {
+        const res = await quadrakillAdapter.projects.resolve(title, {
+          create: true,
+          userId: "user-1",
+        });
+        if (res?.data?.id) {
+          setProjectId(res.data.id);
+        }
+      } catch (err) {
+        console.warn("프로젝트 resolve/create 실패:", err);
+      }
+    };
+    ensureProjectId();
+  }, [projectId, gameTitle, gameNameFromUrl, setProjectId]);
+
+  // Draft가 비어 있을 경우 bootstrap 1회 시도
+  useEffect(() => {
+    const bootstrap = async () => {
+      if (!projectId || bootstrapped) return;
+      try {
+        await quadrakillAdapter.projects.bootstrap(projectId);
+      } catch (err) {
+        console.warn("bootstrap 실패:", err);
+      } finally {
+        setBootstrapped(true);
+      }
+    };
+    bootstrap();
+  }, [projectId, bootstrapped]);
 
   // Hook을 통한 데이터 관리
-  const { fetchSnapshots } = useSnapshotTree(gameTitle);
-  const { fetchGameData } = useGameData(gameTitle);
-  const { fetchAssets } = useAssets(gameTitle);
+  const { fetchSnapshots } = useSnapshotTree({
+    gameName: gameTitle,
+    projectId,
+  });
+  const { fetchGameData } = useGameData({ gameName: gameTitle, projectId });
+  const { fetchAssets } = useAssets({ gameName: gameTitle, projectId });
 
   // 로컬 상태 관리
-  const [activeTab, setActiveTab] = useState("game"); // game, assets, history, data
+  const [activeTab, setActiveTab] = useState("data"); // game, assets, history, data
   // Chat messages are handled inside ChatPanel component now.
   const [isMuted, setIsMuted] = useState(false);
   const chatAddMessageRef = useRef(null);
@@ -56,7 +114,7 @@ const GameStudio = () => {
 
   // 페이지 로드 시 백엔드에서 데이터 불러오기
   useEffect(() => {
-    if (!gameNameFromUrl) return; // 쿼리 없으면 데이터 로드 건너뛰기
+    if (!projectId) return; // projectId 없으면 로드 대기
 
     const loadInitialData = async () => {
       try {
@@ -86,7 +144,7 @@ const GameStudio = () => {
     loadInitialData();
   }, [
     gameTitle,
-    gameNameFromUrl,
+    projectId,
     fetchSnapshots,
     fetchGameData,
     fetchAssets,
@@ -100,8 +158,8 @@ const GameStudio = () => {
     chatAddMessageRef.current = addMessageFn;
   };
 
-  // 쿼리 파라미터가 없으면 안내 화면 표시
-  if (!gameNameFromUrl) {
+  // 쿼리 파라미터가 모두 없으면 안내 화면 표시 (projectId 또는 gameName 둘 중 하나만 있어도 진행)
+  if (!gameNameFromUrl && !projectIdFromUrl && !projectId) {
     return (
       <div
         style={{
@@ -149,6 +207,12 @@ const GameStudio = () => {
     setGameErrorBatch(null);
   };
 
+  useEffect(() => {
+    if (projectId && gameData && Object.keys(gameData || {}).length === 0) {
+      setGameData({ value: "" });
+    }
+  }, [projectId, gameData, setGameData]);
+
   // 복사: iframe src를 우선으로, 없으면 현재 페이지 URL을 복사
   const handleCopyLink = async () => {
     const iframe = gameFrameRef.current;
@@ -181,6 +245,21 @@ const GameStudio = () => {
       <Header />
       <header className="studio-header">
         <div className="header-left">
+          <label className="visually-hidden" htmlFor="project-selector">
+            프로젝트 선택
+          </label>
+          <select
+            id="project-selector"
+            role="combobox"
+            aria-label="프로젝트 선택"
+            className="project-select"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+          >
+            <option value={projectId || ""}>
+              {projectId || "프로젝트 선택"}
+            </option>
+          </select>
           <input
             type="text"
             className="game-title-input"
@@ -243,18 +322,51 @@ const GameStudio = () => {
             )}
             {activeTab === "history" && (
               <div className="history-panel">
-                <SnapshotTree gameName={gameTitle} showImportExport={false} />
+                <SnapshotTree
+                  gameName={gameTitle}
+                  projectId={projectId}
+                  showImportExport={false}
+                />
               </div>
             )}
             {activeTab === "data" && (
               <div className="data-panel">
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 16,
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
+                  <div>
+                    <strong>버전</strong>
+                    <div style={{ fontSize: 12 }}>
+                      총 {snapshots?.length || 0}개
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#555" }}>
+                    projectId: {projectId || "미설정"}
+                  </div>
+                </div>
                 <DataEditor
                   data={gameData}
                   onDataChange={setGameData}
                   gameName={gameTitle}
+                  projectId={projectId}
                   showImportExport={false}
                   hiddenTopLevelKeys={["assets"]}
                 />
+                <div style={{ marginTop: 16 }}>
+                  <AssetManager
+                    onPromptSubmit={handlePromptSubmit}
+                    onSnapshotUpdate={(data) => {
+                      if (data && data.versions) {
+                        setSnapshots(data.versions);
+                      }
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>

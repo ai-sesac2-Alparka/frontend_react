@@ -1,19 +1,15 @@
 import axios from "axios";
 
-// Create axios instance for FastAPI backend
+// Create axios instance for legacy backend (kept for backward compatibility)
 export const backendApi = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL || "http://localhost:8000",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8000",
+  headers: { "Content-Type": "application/json" },
 });
 
-// Create axios instance for Game Server
-export const gameApi = axios.create({
-  baseURL: process.env.REACT_APP_GAME_URL || "http://localhost:8080",
-  headers: {
-    "Content-Type": "application/json",
-  },
+// Quadrakill (preferred) unified backend
+export const quadrakillApi = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || "/api/v1",
+  headers: { "Content-Type": "application/json" },
 });
 
 // Optional: Add request/response interceptors if needed

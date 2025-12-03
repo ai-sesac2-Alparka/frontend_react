@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "./ChatPanel.css";
 import {
   sendErrorBatch,
@@ -16,10 +16,14 @@ export default function ChatPanel({
   gameErrorBatch = null,
   onErrorBatchHandled = null,
 }) {
-  const { gameTitle, setGameData, setSnapshots } = useGame();
+  const { gameTitle, projectId, setGameData, setSnapshots } = useGame();
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
+  const target = useMemo(
+    () => ({ gameName: gameTitle, projectId }),
+    [gameTitle, projectId],
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -43,10 +47,10 @@ export default function ChatPanel({
   // 페이지 로드 시 채팅 이력 불러오기
   useEffect(() => {
     const loadChatHistory = async () => {
-      if (!gameTitle) return;
+      if (!gameTitle && !projectId) return;
 
       try {
-        const response = await getChat(gameTitle);
+        const response = await getChat(target);
         const chatData = response?.data?.chat;
 
         if (Array.isArray(chatData) && chatData.length > 0) {
@@ -63,7 +67,7 @@ export default function ChatPanel({
     };
 
     loadChatHistory();
-  }, [gameTitle]);
+  }, [gameTitle, projectId, target]);
 
   // 게임 에러 배치가 들어오면 메시지 추가
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function ChatPanel({
 
     const sendError = async () => {
       try {
-        await sendErrorBatch(gameTitle, gameErrorBatch);
+        await sendErrorBatch(target, gameErrorBatch);
         console.log("✅ FastAPI 서버로 에러 전송 성공");
       } catch (error) {
         console.error("❌ FastAPI 서버로 에러 전송 실패:", error);
@@ -95,12 +99,12 @@ export default function ChatPanel({
     };
 
     sendError();
-  }, [gameErrorBatch, onErrorBatchHandled, gameTitle]);
+  }, [gameErrorBatch, onErrorBatchHandled, target]);
 
   // 공통: 스냅샷 로그 및 게임 데이터 최신화
   const refreshSnapshotAndGameData = async () => {
     try {
-      const snapRes = await getSnapshotLog(gameTitle);
+      const snapRes = await getSnapshotLog(target);
       const data = snapRes?.data;
       if (data && setSnapshots) {
         setSnapshots(data.versions || data);
@@ -109,9 +113,9 @@ export default function ChatPanel({
       console.warn("스냅샷 로그 가져오기 실패:", snapErr);
     }
 
-    if (setGameData && gameTitle) {
+    if (setGameData && (gameTitle || projectId)) {
       try {
-        const res = await getGameData(gameTitle);
+        const res = await getGameData(target);
         const payload = res?.data;
         if (payload && typeof payload === "object") {
           setGameData(payload);
@@ -126,7 +130,7 @@ export default function ChatPanel({
 
   const handleRevert = async () => {
     try {
-      const response = await revertGame(gameTitle);
+      const response = await revertGame(target);
 
       const botMessage = {
         text: response.data.reply || "이전 상태로 되돌렸습니다.",
@@ -155,15 +159,15 @@ export default function ChatPanel({
     setMessages((prev) => [...prev, tempBotMessage]);
 
     try {
-      const response = await processCodeMessage(messageText, gameTitle);
+      const response = await processCodeMessage(messageText, target);
 
       if (response.data.status === "success") {
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === tempBotMessage.id
               ? { text: response.data.reply, type: "bot" }
-              : msg
-          )
+              : msg,
+          ),
         );
         await refreshSnapshotAndGameData();
       } else {
@@ -171,8 +175,8 @@ export default function ChatPanel({
           prev.map((msg) =>
             msg.id === tempBotMessage.id
               ? { text: "서버 오류: " + response.data.reply, type: "bot" }
-              : msg
-          )
+              : msg,
+          ),
         );
       }
     } catch (error) {
@@ -198,7 +202,7 @@ export default function ChatPanel({
     sendCodeMessage(currentMessage, "응답을 생성하는 중입니다...");
   };
 
-  const bgUrl = (process.env.PUBLIC_URL || "") + "/images/background.svg";
+  const bgUrl = (import.meta.env.BASE_URL || "") + "images/background.svg";
 
   return (
     <div className="chat-panel">

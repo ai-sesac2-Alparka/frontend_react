@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./AssetManager.css";
 import { useGame } from "../../contexts/GameContext";
 import { useAssets } from "../../hooks/useAssets";
+import { quadrakillAdapter } from "../../api/quadrakillAdapter";
 
 export default function AssetManager({
   onPromptSubmit = () => {},
@@ -9,6 +10,7 @@ export default function AssetManager({
 }) {
   const {
     gameTitle,
+    projectId,
     assets: contextAssets,
     setAssets,
     setSnapshots,
@@ -16,13 +18,17 @@ export default function AssetManager({
     assetStamp,
     setAssetStamp,
   } = useGame();
-  const { loading, error, fetchAssets, replaceAndRefresh } =
-    useAssets(gameTitle);
+  const { loading, error, fetchAssets, replaceAndRefresh } = useAssets({
+    projectId,
+    gameName: gameTitle,
+  });
 
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [uploading, setUploading] = useState(false);
   const audioRef = useRef(null);
+  const [filterKind, setFilterKind] = useState("all"); // all | image | sound
+  const quickUploadRef = useRef(null);
 
   // Context의 assets 사용
   const assets = contextAssets || [];
@@ -40,7 +46,7 @@ export default function AssetManager({
       loadAssets();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameTitle]); // gameTitle만 의존성으로 설정
+  }, [gameTitle, projectId]); // gameTitle만 의존성으로 설정
 
   // 사운드 에셋 선택 시 자동 재생
   useEffect(() => {
@@ -65,6 +71,16 @@ export default function AssetManager({
     close();
   };
 
+  const copyToClipboard = async (text) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("클립보드에 복사되었습니다.");
+    } catch (err) {
+      console.warn("클립보드 복사 실패:", err);
+    }
+  };
+
   return (
     <div className="asset-manager">
       {error && (
@@ -76,15 +92,94 @@ export default function AssetManager({
 
       {!loading && (
         <div className="asset-sections-container">
+          {!selected && (
+            <div
+              className="asset-quick-upload"
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+            >
+              <label
+                className="upload-label"
+                style={{ display: "flex", gap: 8 }}
+                htmlFor="quick-upload"
+              >
+                파일 선택
+                <input
+                  ref={quickUploadRef}
+                  type="file"
+                  id="quick-upload"
+                  aria-label="파일 선택"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (!projectId) {
+                      alert("projectId가 필요합니다");
+                      return;
+                    }
+                    try {
+                      setUploading(true);
+                      await quadrakillAdapter.assets.upload({
+                        file,
+                        type: file.type?.startsWith("image/") ? "image" : "raw",
+                        projectId,
+                        name: file.name,
+                      });
+                      const refreshed = await fetchAssets();
+                      if (refreshed) {
+                        setAssets(refreshed);
+                        setAssetStamp(Date.now());
+                      }
+                    } catch (err) {
+                      console.error("quick upload failed:", err);
+                      alert(err.message || "업로드 중 오류가 발생했습니다.");
+                    } finally {
+                      setUploading(false);
+                      if (quickUploadRef.current) {
+                        quickUploadRef.current.value = "";
+                      }
+                    }
+                  }}
+                />
+              </label>
+              {uploading && <span style={{ fontSize: 12 }}>업로드 중…</span>}
+            </div>
+          )}
+          <div className="asset-filters">
+            <label>
+              타입 필터:
+              <select
+                value={filterKind}
+                onChange={(e) => setFilterKind(e.target.value)}
+                aria-hidden="true"
+                tabIndex={-1}
+              >
+                <option value="all">전체</option>
+                <option value="image">이미지</option>
+                <option value="sound">사운드</option>
+              </select>
+            </label>
+          </div>
           {/* 이미지 섹션 */}
           <section className="asset-section">
             <h3 className="section-title">이미지</h3>
             <div className="assets-grid">
-              {assets.filter((a) => a.type === "image").length === 0 && (
+              {assets.filter(
+                (a) =>
+                  a.kind === "image" &&
+                  (filterKind === "all" || filterKind === "image"),
+              ).length === 0 && (
                 <div className="empty-message">이미지가 없습니다.</div>
               )}
               {assets
-                .filter((a) => a.type === "image")
+                .filter(
+                  (a) =>
+                    a.kind === "image" &&
+                    (filterKind === "all" || filterKind === "image"),
+                )
                 .map((a) => {
                   const stampedSrc = assetStamp
                     ? `${a.src}?v=${assetStamp}`
@@ -100,7 +195,10 @@ export default function AssetManager({
                       <div className="asset-preview">
                         <img src={stampedSrc} alt={a.name} />
                       </div>
-                      <div className="asset-name">{a.name}</div>
+                      <div className="asset-name">
+                        {a.displayName || a.name}{" "}
+                        {a.type && a.type !== "image" ? `(${a.type})` : ""}
+                      </div>
                     </div>
                   );
                 })}
@@ -111,11 +209,19 @@ export default function AssetManager({
           <section className="asset-section">
             <h3 className="section-title">사운드</h3>
             <div className="assets-grid">
-              {assets.filter((a) => a.type === "sound").length === 0 && (
+              {assets.filter(
+                (a) =>
+                  a.kind === "sound" &&
+                  (filterKind === "all" || filterKind === "sound"),
+              ).length === 0 && (
                 <div className="empty-message">사운드가 없습니다.</div>
               )}
               {assets
-                .filter((a) => a.type === "sound")
+                .filter(
+                  (a) =>
+                    a.kind === "sound" &&
+                    (filterKind === "all" || filterKind === "sound"),
+                )
                 .map((a) => {
                   return (
                     <div
@@ -128,7 +234,10 @@ export default function AssetManager({
                       <div className="asset-preview">
                         <div className="audio-placeholder">🎵</div>
                       </div>
-                      <div className="asset-name">{a.name}</div>
+                      <div className="asset-name">
+                        {a.displayName || a.name}{" "}
+                        {a.type && a.type !== "sound" ? `(${a.type})` : ""}
+                      </div>
                     </div>
                   );
                 })}
@@ -143,8 +252,62 @@ export default function AssetManager({
             <button className="asset-modal-x" aria-label="닫기" onClick={close}>
               ×
             </button>
-            <h3 className="asset-modal-title">{selected.name}</h3>
+            <h3 className="asset-modal-title">선택한 에셋</h3>
             <div className="asset-modal-body">
+              <div className="asset-meta">
+                {selected.type && (
+                  <div className="asset-meta-row">타입: {selected.type}</div>
+                )}
+                {selected.projectId && (
+                  <div className="asset-meta-row">
+                    프로젝트: {selected.projectId}
+                    <button
+                      className="asset-meta-copy"
+                      onClick={() => copyToClipboard(selected.projectId)}
+                    >
+                      복사
+                    </button>
+                  </div>
+                )}
+                {selected.storagePath && (
+                  <div className="asset-meta-row">
+                    {(() => {
+                      const parts = selected.storagePath.split("/");
+                      const dir =
+                        parts.length > 1
+                          ? parts.slice(0, parts.length - 1).join("/")
+                          : selected.storagePath;
+                      return (
+                        <>
+                          경로: {dir}
+                          <button
+                            className="asset-meta-copy"
+                            onClick={() => copyToClipboard(dir)}
+                          >
+                            복사
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+                {selected.metadata?.checksum_sha256 && (
+                  <div className="asset-meta-row">
+                    SHA256: {selected.metadata.checksum_sha256.slice(0, 12)}…
+                    <button
+                      className="asset-meta-copy"
+                      onClick={() =>
+                        copyToClipboard(selected.metadata.checksum_sha256)
+                      }
+                    >
+                      복사
+                    </button>
+                  </div>
+                )}
+                {!selected.metadata?.checksum_sha256 && (
+                  <div className="asset-meta-row">SHA256: 없음</div>
+                )}
+              </div>
               <div className="asset-modal-preview-large">
                 {selected.type === "image" && selected.src ? (
                   <img
