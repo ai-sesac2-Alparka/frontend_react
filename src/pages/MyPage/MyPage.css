@@ -168,6 +168,10 @@
   margin: 0;
 }
 
+.section-header h3 {
+  font-family: 'Paperlogy-5', sans-serif; /* change to Paperlogy-5 */
+}
+
 .section-header .count {
   color: #A3E635;
   margin-left: 8px;
@@ -179,6 +183,10 @@
   color: #ccc;
   cursor: pointer;
   font-size: 14px;
+}
+
+.view-all-btn {
+  font-family: 'Paperlogy-5', sans-serif; /* change to Paperlogy-5 */
 }
 
 .game-grid {
