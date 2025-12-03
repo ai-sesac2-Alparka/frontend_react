@@ -11,6 +11,7 @@ export default function AssetManager({
   const {
     gameTitle,
     projectId,
+    gameData,
     assets: contextAssets,
     setAssets,
     setSnapshots,
@@ -33,6 +34,7 @@ export default function AssetManager({
   const [wizardJson, setWizardJson] = useState(null);
   const [applyDraft, setApplyDraft] = useState(false);
   const [draftApplyStatus, setDraftApplyStatus] = useState("");
+  const [mergeDraft, setMergeDraft] = useState(true);
   const audioRef = useRef(null);
 
   // Context의 assets 사용
@@ -94,6 +96,17 @@ export default function AssetManager({
     return "raw";
   };
 
+  const suggestName = (base) => {
+    if (base && base.trim()) return base.trim();
+    const parts = [];
+    if (generationPrompt.trim())
+      parts.push(generationPrompt.trim().slice(0, 24));
+    if (worldType) parts.push(worldType);
+    if (style) parts.push(style);
+    const fallback = parts.join("-").replace(/\s+/g, "_");
+    return fallback || `asset-${Date.now()}`;
+  };
+
   const handleUploadAsset = async ({ file, type, name }) => {
     await quadrakillAdapter.assets.upload({
       file,
@@ -140,7 +153,11 @@ export default function AssetManager({
           `지원하지 않는 MIME(${file.type || "unknown"}) 결과입니다.`,
         );
       }
-      await handleUploadAsset({ file, type: resolvedType, name: file.name });
+      await handleUploadAsset({
+        file,
+        type: resolvedType,
+        name: suggestName(file.name),
+      });
     } catch (err) {
       console.error(err);
       alert(err.message || "2D 생성/업로드에 실패했습니다.");
@@ -184,20 +201,50 @@ export default function AssetManager({
         await handleUploadAsset({
           file,
           type: "json",
-          name: file.name,
+          name: suggestName(file.name),
         });
 
         if (applyDraft) {
           try {
             setDraftApplyStatus("Draft 적용 중…");
-            await quadrakillAdapter.projects.updateDraft(
-              projectId,
-              constructData,
-            );
+            const baseData =
+              constructData?.working_data &&
+              typeof constructData.working_data === "object"
+                ? constructData.working_data
+                : constructData;
+            const merged =
+              mergeDraft && gameData && typeof gameData === "object"
+                ? { ...baseData, ...gameData }
+                : baseData;
+
+            // 엔티티 변경 감지: 길이나 id 집합이 다르면 경고
+            const newEntities = Array.isArray(baseData?.entities)
+              ? baseData.entities.map((e) => e.id || e.name)
+              : [];
+            const oldEntities = Array.isArray(gameData?.entities)
+              ? gameData.entities.map((e) => e.id || e.name)
+              : [];
+            const entityChanged =
+              newEntities.length !== oldEntities.length ||
+              newEntities.some((id) => !oldEntities.includes(id));
+            if (entityChanged) {
+              const ok = window.confirm(
+                "새 구성의 엔티티 목록이 현재와 다릅니다. 적용하시겠습니까?",
+              );
+              if (!ok) {
+                setDraftApplyStatus("Draft 적용 취소");
+                return;
+              }
+            }
+
+            await quadrakillAdapter.projects.updateDraft(projectId, merged);
             const updatedAssets = await fetchAssets();
             if (updatedAssets) {
               setAssets(updatedAssets);
               setAssetStamp(Date.now());
+            }
+            if (merged) {
+              setGameData(merged);
             }
             setDraftApplyStatus("Draft 저장 완료");
           } catch (draftErr) {
@@ -287,6 +334,18 @@ export default function AssetManager({
                   />
                   생성된 JSON을 draft(working_data)로 바로 저장
                 </label>
+                {applyDraft && (
+                  <label
+                    style={{ display: "flex", gap: 8, alignItems: "center" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={mergeDraft}
+                      onChange={(e) => setMergeDraft(e.target.checked)}
+                    />
+                    기존 draft와 병합 (해제 시 완전 대체)
+                  </label>
+                )}
                 {draftApplyStatus && (
                   <div className="draft-status">{draftApplyStatus}</div>
                 )}
