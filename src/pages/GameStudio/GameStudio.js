@@ -53,6 +53,7 @@ const GameStudio = () => {
   const [isMuted, setIsMuted] = useState(false);
   const chatAddMessageRef = useRef(null);
   const [gameErrorBatch, setGameErrorBatch] = useState(null);
+  const [reloadToken, setReloadToken] = useState(0); // 게임 iframe 리로드용
 
   // 페이지 로드 시 백엔드에서 데이터 불러오기
   useEffect(() => {
@@ -149,6 +150,10 @@ const GameStudio = () => {
     setGameErrorBatch(null);
   };
 
+  const handleGameReload = () => {
+    setReloadToken((prev) => prev + 1);
+  };
+
   // 복사: iframe src를 우선으로, 없으면 현재 페이지 URL을 복사
   const handleCopyLink = async () => {
     const iframe = gameFrameRef.current;
@@ -227,6 +232,7 @@ const GameStudio = () => {
                   /* can be used for additional tracking */
                 }}
                 onErrorBatch={handleErrorBatch}
+                reloadToken={reloadToken}
               />
             )}
             {activeTab === "assets" && (
@@ -271,6 +277,7 @@ const GameStudio = () => {
           onReady={handleChatReady}
           gameErrorBatch={gameErrorBatch}
           onErrorBatchHandled={handleErrorBatchHandled}
+          onGameReload={handleGameReload}
         />
       </div>
       {/* asset modal moved to AssetManager component */}

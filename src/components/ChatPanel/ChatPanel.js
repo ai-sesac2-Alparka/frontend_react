@@ -2,21 +2,35 @@ import React, { useState, useEffect, useRef } from "react";
 import "./ChatPanel.css";
 import {
   sendErrorBatch,
-  getSnapshotLog,
-  getGameData,
   revertGame,
   processCodeMessage,
   getChat,
 } from "../../api/backend";
 import { useGame } from "../../contexts/GameContext";
+import { useSnapshotTree } from "../../hooks/useSnapshotTree";
+import { useGameData } from "../../hooks/useGameData";
+import { useAssets } from "../../hooks/useAssets";
 
 export default function ChatPanel({
   initialMessages = [],
   onReady = null,
   gameErrorBatch = null,
   onErrorBatchHandled = null,
+  onGameReload = null,
 }) {
-  const { gameTitle, setGameData, setSnapshots } = useGame();
+  const { 
+    gameTitle, 
+    setGameData, 
+    setSnapshots, 
+    setAssets, 
+    setAssetStamp 
+  } = useGame();
+  
+  // Hooks 사용 - 각 탭의 데이터를 갱신하기 위해
+  const { fetchSnapshots } = useSnapshotTree(gameTitle);
+  const { fetchGameData } = useGameData(gameTitle);
+  const { fetchAssets } = useAssets(gameTitle);
+  
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
@@ -97,30 +111,44 @@ export default function ChatPanel({
     sendError();
   }, [gameErrorBatch, onErrorBatchHandled, gameTitle]);
 
-  // 공통: 스냅샷 로그 및 게임 데이터 최신화
-  const refreshSnapshotAndGameData = async () => {
+  // 공통: 스냅샷 로그 및 게임 데이터, 에셋 최신화 (Hook 사용)
+  const refreshAllData = async () => {
+    if (!gameTitle) return;
+
     try {
-      const snapRes = await getSnapshotLog(gameTitle);
-      const data = snapRes?.data;
-      if (data && setSnapshots) {
-        setSnapshots(data.versions || data);
+      // 1. 스냅샷 로그 갱신
+      const snapshots = await fetchSnapshots();
+      if (snapshots && setSnapshots) {
+        setSnapshots(snapshots);
       }
     } catch (snapErr) {
-      console.warn("스냅샷 로그 가져오기 실패:", snapErr);
+      console.warn("스냅샷 로그 갱신 실패:", snapErr);
     }
 
-    if (setGameData && gameTitle) {
-      try {
-        const res = await getGameData(gameTitle);
-        const payload = res?.data;
-        if (payload && typeof payload === "object") {
-          setGameData(payload);
-        } else {
-          console.warn("예상치 못한 /game_data 응답 형식:", payload);
-        }
-      } catch (gdErr) {
-        console.warn("게임 데이터 갱신 실패(/game_data):", gdErr);
+    try {
+      // 2. 게임 데이터 갱신
+      const gameData = await fetchGameData();
+      if (gameData && setGameData) {
+        setGameData(gameData);
       }
+    } catch (gdErr) {
+      console.warn("게임 데이터 갱신 실패:", gdErr);
+    }
+
+    try {
+      // 3. 에셋 데이터 갱신
+      const assets = await fetchAssets();
+      if (assets && setAssets) {
+        setAssets(assets);
+        setAssetStamp(Date.now()); // 에셋 변경 시 스탬프 갱신
+      }
+    } catch (assetErr) {
+      console.warn("에셋 갱신 실패:", assetErr);
+    }
+
+    // 4. 게임 iframe 리로드 (부모 컴포넌트에 알림)
+    if (onGameReload) {
+      onGameReload();
     }
   };
 
@@ -134,7 +162,7 @@ export default function ChatPanel({
       };
       setMessages((prev) => [...prev, botMessage]);
 
-      await refreshSnapshotAndGameData();
+      await refreshAllData();
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
@@ -165,7 +193,7 @@ export default function ChatPanel({
               : msg
           )
         );
-        await refreshSnapshotAndGameData();
+        await refreshAllData();
       } else {
         setMessages((prev) =>
           prev.map((msg) =>

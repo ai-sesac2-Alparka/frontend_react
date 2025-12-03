@@ -10,6 +10,7 @@ const GameRunner = ({
   onFullscreen,
   reloadToken = 0,
   onErrorBatch = null,
+  onRefresh = null,
 }) => {
   const gameFrameRef = useRef(null);
   const [loadError, setLoadError] = useState(false);
@@ -103,11 +104,32 @@ const GameRunner = ({
     setLoadError(true);
   };
 
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      // 기본 동작: iframe 새로고침
+      const iframe = gameFrameRef.current;
+      if (iframe) {
+        setIsLoading(true);
+        setLoadError(false);
+        const currentSrc = iframe.src;
+        iframe.src = currentSrc;
+      }
+    }
+  };
+
   return (
     <div className="game-container">
       <div className="game-toolbar">
         <div className="toolbar-left">
-          <span className="status-dot">●</span> Running
+          <button 
+            className="tool-btn refresh-btn" 
+            onClick={handleRefresh}
+            title="새로고침"
+          >
+            🔄
+          </button>
         </div>
         <div className="toolbar-right">
           <button className="tool-btn" onClick={onToggleMute}>
@@ -203,6 +225,7 @@ GameRunner.propTypes = {
   onFullscreen: PropTypes.func,
   reloadToken: PropTypes.number,
   onErrorBatch: PropTypes.func,
+  onRefresh: PropTypes.func,
 };
 
 GameRunner.defaultProps = {
@@ -210,6 +233,7 @@ GameRunner.defaultProps = {
   isMuted: false,
   reloadToken: 0,
   onErrorBatch: null,
+  onRefresh: null,
 };
 
 export default GameRunner;
