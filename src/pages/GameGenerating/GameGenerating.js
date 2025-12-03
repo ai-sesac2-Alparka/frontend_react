@@ -11,7 +11,7 @@ const loadingGif = "/images/gamegenerating.gif";
 const GameGenerating = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // CustomizeStep2에서 전달받은 프롬프트 데이터
   const finalPrompt = location.state?.finalPrompt || "";
   const [error, setError] = useState(null);
@@ -30,7 +30,8 @@ const GameGenerating = () => {
 
         // 1. 고유 ID 받아오기
         const idResponse = await getUniqueId();
-        const gameId = idResponse.data?.id || idResponse.data?.game_id || idResponse.data;
+        const gameId =
+          idResponse.data?.id || idResponse.data?.game_id || idResponse.data;
         console.log("받아온 게임 ID:", gameId);
 
         if (!gameId) {
@@ -78,13 +79,19 @@ const GameGenerating = () => {
         ) : (
           <>
             <div className="text-wrapper">뚝딱! 게임 생성 중…</div>
-            
+
             {/* 중앙 움짤 배치 */}
             <div className="image-container">
-              <img src={loadingGif} alt="게임 생성 중" className="loading-gif" />
+              <img
+                src={loadingGif}
+                alt="게임 생성 중"
+                className="loading-gif"
+              />
             </div>
 
-            <p className="div">AI가 코드를 작성하고 그래픽을 그리고 있습니다.</p>
+            <p className="div">
+              AI가 코드를 작성하고 그래픽을 그리고 있습니다.
+            </p>
           </>
         )}
       </div>
