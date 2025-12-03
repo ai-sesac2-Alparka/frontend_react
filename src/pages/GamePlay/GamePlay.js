@@ -34,11 +34,11 @@ const GamePlay = () => {
         setIsLoading(true);
         const response = await getGameMetadata(gameId);
         const data = response.data;
-        
+
         setMetadata(data);
         setLikeCount(data.likes || 0);
         setIsLiked(data.isLiked || false);
-        
+
         // iframe src 설정 (게임 URL 구성)
         if (data.gameUrl) {
           setIframeSrc(data.gameUrl);
@@ -46,7 +46,7 @@ const GamePlay = () => {
           // 기본 URL 구성
           setIframeSrc(`http://localhost:8080/${gameId}`);
         }
-        
+
         setLoadError(false);
       } catch (error) {
         console.error("게임 메타데이터 로드 실패:", error);
@@ -126,7 +126,7 @@ const GamePlay = () => {
   const handleFullscreen = () => {
     const iframe = gameFrameRef.current;
     if (!iframe) return;
-    
+
     if (iframe.requestFullscreen) {
       iframe.requestFullscreen();
     } else if (iframe.mozRequestFullScreen) {
@@ -159,119 +159,128 @@ const GamePlay = () => {
   return (
     <div className="game-play-page">
       <Header />
-      
+
       <div className="play-container">
         {/* --- 1. 게임 화면 영역 --- */}
         <div className="game-screen-wrapper">
-            <div className="game-header-bar">
-                <div className="game-title">
-                    <span className="badge">
-                      {metadata?.category || "Arcade"}
-                    </span>
-                    <h2>{metadata?.game_title || "게임 로딩중..."}</h2>
-                </div>
-                <div className="game-controls">
-                    <button 
-                      className="control-btn refresh-btn" 
-                      onClick={handleRefresh}
-                      title="새로고침"
-                    >
-                      🔄
-                    </button>
-                    <button className="control-btn" onClick={() => setIsMuted(!isMuted)}>
-                        {isMuted ? "🔇" : "🔊"}
-                    </button>
-                    <button className="control-btn" onClick={handleCopyLink} title="링크 복사">
-                        🔗
-                    </button>
-                    <button className="control-btn" onClick={handleFullscreen} title="전체 화면">
-                        ⛶
-                    </button>
-                </div>
+          <div className="game-header-bar">
+            <div className="game-title">
+              <span className="badge">{metadata?.category || "Arcade"}</span>
+              <h2>{metadata?.game_title || "게임 로딩중..."}</h2>
             </div>
-
-            <div className="iframe-container">
-                {loadError && (
-                  <div className="error-overlay">
-                    <div className="error-icon">⚠️</div>
-                    <h3 className="error-title">게임을 불러올 수 없습니다</h3>
-                    <p className="error-message">
-                      해당 게임이 존재하지 않거나 서버에서 제공하지 않습니다.
-                    </p>
-                    {iframeSrc && (
-                      <p className="error-url">URL: {iframeSrc}</p>
-                    )}
-                  </div>
-                )}
-
-                {isLoading && !loadError && (
-                  <div className="loading-overlay">
-                    로딩 중...
-                  </div>
-                )}
-
-                {iframeSrc && (
-                  <iframe 
-                    key={reloadToken}
-                    ref={gameFrameRef}
-                    id="game-iframe"
-                    className="game-iframe" 
-                    src={iframeSrc}
-                    title="Game Play"
-                    onLoad={handleIframeLoad}
-                    onError={handleIframeError}
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    style={{
-                      display: loadError ? "none" : "block",
-                    }}
-                  />
-                )}
+            <div className="game-controls">
+              <button
+                className="control-btn refresh-btn"
+                onClick={handleRefresh}
+                title="새로고침"
+              >
+                🔄
+              </button>
+              <button
+                className="control-btn"
+                onClick={() => setIsMuted(!isMuted)}
+              >
+                {isMuted ? "🔇" : "🔊"}
+              </button>
+              <button
+                className="control-btn"
+                onClick={handleCopyLink}
+                title="링크 복사"
+              >
+                🔗
+              </button>
+              <button
+                className="control-btn"
+                onClick={handleFullscreen}
+                title="전체 화면"
+              >
+                ⛶
+              </button>
             </div>
+          </div>
+
+          <div className="iframe-container">
+            {loadError && (
+              <div className="error-overlay">
+                <div className="error-icon">⚠️</div>
+                <h3 className="error-title">게임을 불러올 수 없습니다</h3>
+                <p className="error-message">
+                  해당 게임이 존재하지 않거나 서버에서 제공하지 않습니다.
+                </p>
+                {iframeSrc && <p className="error-url">URL: {iframeSrc}</p>}
+              </div>
+            )}
+
+            {isLoading && !loadError && (
+              <div className="loading-overlay">로딩 중...</div>
+            )}
+
+            {iframeSrc && (
+              <iframe
+                key={reloadToken}
+                ref={gameFrameRef}
+                id="game-iframe"
+                className="game-iframe"
+                src={iframeSrc}
+                title="Game Play"
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                style={{
+                  display: loadError ? "none" : "block",
+                }}
+              />
+            )}
+          </div>
         </div>
 
         {/* --- 2. 하단 정보 및 액션 바 --- */}
         <div className="game-action-bar">
-            <div className="action-left">
-                <div className="creator-profile">
-                    <div className="profile-img" />
-                    <div className="profile-info">
-                        <span className="creator-name">
-                          {metadata?.author || "알파카 장인"}
-                        </span>
-                        <span className="upload-date">
-                          {metadata?.created_at ? new Date(metadata.created_at).toLocaleDateString("ko-KR", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                          }) : new Date().toLocaleDateString("ko-KR", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                          })}
-                        </span>
-                    </div>
-                </div>
+          <div className="action-left">
+            <div className="creator-profile">
+              <div className="profile-img" />
+              <div className="profile-info">
+                <span className="creator-name">
+                  {metadata?.author || "알파카 장인"}
+                </span>
+                <span className="upload-date">
+                  {metadata?.created_at
+                    ? new Date(metadata.created_at).toLocaleDateString(
+                        "ko-KR",
+                        {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        }
+                      )
+                    : new Date().toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                </span>
+              </div>
             </div>
+          </div>
 
-            <div className="action-center">
-                 {/* 좋아요 버튼 */}
-                <button 
-                    className={`like-button ${isLiked ? "active" : ""}`} 
-                    onClick={handleLike}
-                >
-                    <span className="heart-icon">{isLiked ? "❤️" : "🤍"}</span>
-                    <span className="like-count">{likeCount}</span>
-                </button>
-            </div>
+          <div className="action-center">
+            {/* 좋아요 버튼 */}
+            <button
+              className={`like-button ${isLiked ? "active" : ""}`}
+              onClick={handleLike}
+            >
+              <span className="heart-icon">{isLiked ? "❤️" : "🤍"}</span>
+              <span className="like-count">{likeCount}</span>
+            </button>
+          </div>
 
-            <div className="action-right">
-                {/* 수정하기 버튼 */}
-                <button className="edit-button" onClick={handleEdit}>
-                    <span className="icon">🛠️</span>
-                    이 게임 리믹스하기
-                </button>
-            </div>
+          <div className="action-right">
+            {/* 수정하기 버튼 */}
+            <button className="edit-button" onClick={handleEdit}>
+              <span className="icon">🛠️</span>이 게임 리믹스하기
+            </button>
+          </div>
         </div>
       </div>
     </div>

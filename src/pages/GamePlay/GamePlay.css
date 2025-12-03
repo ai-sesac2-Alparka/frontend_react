@@ -2,12 +2,12 @@
 
 .game-play-page {
   min-height: 100vh;
-  background: #7C3AED;
+  background: #7c3aed;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: white;
-  font-family: 'Paperlogy-4', sans-serif;
+  font-family: "Paperlogy-4", sans-serif;
 }
 
 .play-container {
@@ -25,7 +25,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #2D1B4E;
+  background-color: #2d1b4e;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -40,7 +40,7 @@
   padding: 10px 16px;
   /* header bar set to white per request */
   background-color: #ffffff;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .game-title {
@@ -50,7 +50,7 @@
 }
 
 .game-title .badge {
-  background-color: #7C3AED;
+  background-color: #7c3aed;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -61,7 +61,7 @@
 .game-title h2 {
   margin: 0;
   font-size: 18px;
-  font-family: 'Paperlogy-7Bold', sans-serif;
+  font-family: "Paperlogy-7Bold", sans-serif;
   color: #000000; /* make title text black */
   transform: translateY(6px);
 }
@@ -131,20 +131,20 @@
 .error-title {
   margin: 0 0 10px 0;
   color: #333;
-  font-family: 'Paperlogy-7Bold', sans-serif;
+  font-family: "Paperlogy-7Bold", sans-serif;
 }
 
 .error-message {
   margin: 0;
   color: #666;
-  font-family: 'Paperlogy-4', sans-serif;
+  font-family: "Paperlogy-4", sans-serif;
 }
 
 .error-url {
   margin: 10px 0 0 0;
   font-size: 14px;
   color: #999;
-  font-family: 'Paperlogy-4', sans-serif;
+  font-family: "Paperlogy-4", sans-serif;
   word-break: break-all;
 }
 
@@ -160,7 +160,7 @@
   align-items: center;
   background: #000;
   color: #fff;
-  font-family: 'Paperlogy-5', sans-serif;
+  font-family: "Paperlogy-5", sans-serif;
   font-size: 18px;
   z-index: 5;
 }
@@ -177,7 +177,8 @@
   backdrop-filter: blur(10px);
 }
 
-.action-left, .action-right {
+.action-left,
+.action-right {
   flex: 1;
   display: flex;
   align-items: center;
@@ -210,13 +211,13 @@
 .creator-name {
   font-weight: bold;
   font-size: 16px;
-  font-family: 'Paperlogy-5', sans-serif;
+  font-family: "Paperlogy-5", sans-serif;
 }
 
 .upload-date {
   font-size: 12px;
   color: #aaa;
-  font-family: 'Paperlogy-5', sans-serif;
+  font-family: "Paperlogy-5", sans-serif;
 }
 
 /* 좋아요 버튼 */
@@ -239,7 +240,7 @@
 
 .like-button.active {
   border-color: #ff4d4d;
-  background-color: #26104C;
+  background-color: #26104c;
 }
 
 .heart-icon {
@@ -250,7 +251,7 @@
   font-size: 16px;
   font-weight: bold;
   color: white;
-  font-family: 'Paperlogy-5', sans-serif;
+  font-family: "Paperlogy-5", sans-serif;
 }
 
 /* 수정하기(리믹스) 버튼 */
@@ -258,13 +259,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #7C3AED;
+  background-color: #7c3aed;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 12px;
   font-size: 14px;
-  font-family: 'Paperlogy-5', sans-serif;
+  font-family: "Paperlogy-5", sans-serif;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -272,5 +273,5 @@
 }
 
 .edit-button:hover {
-  background-color: #6D28D9;
+  background-color: #6d28d9;
 }
