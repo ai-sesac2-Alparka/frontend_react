@@ -264,18 +264,43 @@ function HomeCreation() {
           </button>
 
           <div className="fame-games-grid">
-            {[1, 2, 3, 4].map((i) => (
+            {[
+              {
+                id: 'sy_vampire_survivors',
+                title: '좀비 서바이벌',
+                author: 'Studio SY',
+                thumbnail: '/images/fame_vampire_surviviors.png',
+              },
+              {
+                id: 'es_music',
+                title: '리듬 월드',
+                author: 'ES Lab',
+                thumbnail: '/images/fame_rhythm_world.png',
+              },
+              {
+                id: 'sy_run_gen_img',
+                title: '쿠키 점프',
+                author: 'Studio SY',
+                thumbnail: '/images/fame_cookie_jump.png',
+              },
+              {
+                id: 'sy_ww2_shooting',
+                title: '스카이 레이더스',
+                author: 'Studio SY',
+                thumbnail: '/images/fame_sky_raiders.png',
+              },
+            ].map((game) => (
               <div
-                key={i}
+                key={game.id}
                 className="fame-game-item"
-                onClick={() => navigate("/play/1")}
+                onClick={() => navigate(`/play/${game.id}`)}
               >
                 <div className="fame-game-image">
-                  <img src="https://placehold.co/605x372" alt={`게임 ${i}`} />
+                  <img src={game.thumbnail} alt={game.title} />
                 </div>
                 <div className="fame-game-info">
-                  <h3 className="fame-game-title">김대리의 월급 루팡</h3>
-                  <p className="fame-game-author">직장인 A</p>
+                  <h3 className="fame-game-title">{game.title}</h3>
+                  <p className="fame-game-author">{game.author}</p>
                 </div>
               </div>
             ))}
