@@ -21,12 +21,21 @@ function HomeCreation() {
       try {
         const res = await getShowcaseGames(4);
         const gamesData = res.data.games || [];
-        const processedGames = gamesData.map((game) => ({
-          ...game,
-          thumbnail: game.thumbnail?.startsWith("http")
-            ? game.thumbnail
-            : `${backendUrl}${game.thumbnail}`,
-        }));
+        const processedGames = gamesData.map((game) => {
+          let thumbnailUrl = game.thumbnail;
+          if (thumbnailUrl && !thumbnailUrl.startsWith("http")) {
+            thumbnailUrl = `${backendUrl}${thumbnailUrl}`;
+          }
+          // Add timestamp to prevent caching
+          if (thumbnailUrl) {
+            const separator = thumbnailUrl.includes("?") ? "&" : "?";
+            thumbnailUrl = `${thumbnailUrl}${separator}t=${new Date().getTime()}`;
+          }
+          return {
+            ...game,
+            thumbnail: thumbnailUrl,
+          };
+        });
         setShowcaseGames(processedGames);
       } catch (error) {
         console.error("Failed to fetch showcase games:", error);
