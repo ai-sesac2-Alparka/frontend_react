@@ -275,28 +275,28 @@ function HomeCreation() {
           <div className="fame-games-grid">
             {[
               {
-                id: 'sy_vampire_survivors',
-                title: '좀비 서바이벌',
-                author: 'Studio SY',
-                thumbnail: '/images/fame_vampire_surviviors.png',
+                id: "sy_vampire_survivors",
+                title: "좀비 서바이벌",
+                author: "Studio SY",
+                thumbnail: "/images/fame_vampire_surviviors.png",
               },
               {
-                id: 'es_music',
-                title: '리듬 월드',
-                author: 'ES Lab',
-                thumbnail: '/images/fame_rhythm_world.png',
+                id: "es_music",
+                title: "리듬 월드",
+                author: "ES Lab",
+                thumbnail: "/images/fame_rhythm_world.png",
               },
               {
-                id: 'sy_run_gen_img',
-                title: '쿠키 점프',
-                author: 'Studio SY',
-                thumbnail: '/images/fame_cookie_jump.png',
+                id: "sy_run_gen_img",
+                title: "쿠키 점프",
+                author: "Studio SY",
+                thumbnail: "/images/fame_cookie_jump.png",
               },
               {
-                id: 'sy_ww2_shooting',
-                title: '스카이 레이더스',
-                author: 'Studio SY',
-                thumbnail: '/images/fame_sky_raiders.png',
+                id: "sy_ww2_shooting",
+                title: "스카이 레이더스",
+                author: "Studio SY",
+                thumbnail: "/images/fame_sky_raiders.png",
               },
             ].map((game) => (
               <div
