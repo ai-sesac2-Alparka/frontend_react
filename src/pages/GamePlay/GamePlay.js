@@ -99,9 +99,9 @@ const GamePlay = () => {
   };
 
   const handleEdit = () => {
-  // 게임 스튜디오로 이동 (쿼리 파라미터로 gameName 전달)
-  const gameName = metadata?.game_title || gameId;
-  navigate(`/studio?gameName=${encodeURIComponent(gameName)}`);
+    // 게임 스튜디오로 이동 (쿼리 파라미터로 gameName 전달)
+    // 무조건 gameId를 사용하도록 수정
+    navigate(`/studio?gameName=${encodeURIComponent(gameId)}`);
   };
 
   const handleCopyLink = async () => {
