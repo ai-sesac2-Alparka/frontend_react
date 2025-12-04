@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 // import Header from "../../components/Header/Header"; // 헤더 필요 시 주석 해제
 import "./Login.css";
 
-const Login = () => {
+const Login = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
 
   // 입력값 상태 관리
@@ -29,19 +29,27 @@ const Login = () => {
       alert("이메일과 비밀번호를 입력해주세요.");
       return;
     }
-    
+
     // TODO: 백엔드 로그인 API 호출
     console.log("로그인 시도:", formData);
-    
-    // 임시: 로그인 성공 처리
-    alert(`환영합니다! ${formData.email}님 👋`);
-    navigate("/home"); // 로그인 후 홈으로 이동
+
+    // 임시: 특정 계정으로 로그인 성공 처리
+    if (
+      formData.email === "sy@quadra.kill" &&
+      formData.password === "12345678"
+    ) {
+      alert(`환영합니다! ${formData.email}님 👋`);
+      if (setIsLoggedIn) setIsLoggedIn(true); // 로그인 상태 변경
+      navigate("/home"); // 로그인 후 홈으로 이동
+    } else {
+      alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+    }
   };
 
   // 소셜 로그인 핸들러
   const handleSocialLogin = (provider) => {
     alert(`${provider} 계정으로 로그인합니다.`);
-    // window.location.href = `...`; 
+    // window.location.href = `...`;
   };
 
   return (
@@ -49,7 +57,9 @@ const Login = () => {
       <div className="login-container">
         <div className="login-card">
           <h1 className="login-title">로그인</h1>
-          <p className="login-subtitle">오늘도 알파카 월드에서 즐거운 시간 보내세요!</p>
+          <p className="login-subtitle">
+            오늘도 알파카 월드에서 즐거운 시간 보내세요!
+          </p>
 
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-group">
@@ -84,25 +94,25 @@ const Login = () => {
             <div className="divider">
               <span>또는 간편하게 로그인</span>
             </div>
-            
+
             <div className="social-buttons">
-              <button 
-                className="social-btn btn-google" 
-                onClick={() => handleSocialLogin('google')}
+              <button
+                className="social-btn btn-google"
+                onClick={() => handleSocialLogin("google")}
               >
                 <span className="social-icon">G</span> 구글로 계속하기
               </button>
-              
-              <button 
-                className="social-btn btn-kakao" 
-                onClick={() => handleSocialLogin('kakao')}
+
+              <button
+                className="social-btn btn-kakao"
+                onClick={() => handleSocialLogin("kakao")}
               >
                 <span className="social-icon">K</span> 카카오로 계속하기
               </button>
-              
-              <button 
-                className="social-btn btn-naver" 
-                onClick={() => handleSocialLogin('naver')}
+
+              <button
+                className="social-btn btn-naver"
+                onClick={() => handleSocialLogin("naver")}
               >
                 <span className="social-icon">N</span> 네이버로 계속하기
               </button>
@@ -110,7 +120,8 @@ const Login = () => {
           </div>
 
           <p className="signup-link">
-            아직 계정이 없으신가요? <span onClick={() => navigate("/signup")}>회원가입하기</span>
+            아직 계정이 없으신가요?{" "}
+            <span onClick={() => navigate("/signup")}>회원가입하기</span>
           </p>
         </div>
       </div>

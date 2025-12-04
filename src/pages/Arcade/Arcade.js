@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header/Header"; // 기존 헤더 컴포넌트 임포트
+// import Header from "../../components/Header/Header"; // 기존 헤더 컴포넌트 임포트
 import { getArcadeGames, getTrendingGame } from "../../api/arcade";
 import "./Arcade.css";
 
@@ -108,8 +108,7 @@ const Arcade = () => {
 
   return (
     <div className="arcade-page">
-      {/* 1. 상단바 (Global Header) */}
-      <Header />
+      {/* 1. 상단바 (Global Header) - Removed as it is provided by MainLayout */}
       {/* 2. 트렌드 배너 — 헤더 바로 아래 풀 폭 배치 */}
       <section className="trend-banner full-width">
         <div className="trend-info">

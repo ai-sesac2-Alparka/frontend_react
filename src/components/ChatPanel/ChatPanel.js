@@ -43,10 +43,24 @@ export default function ChatPanel({
     setMessages((m) => [...m, msg]);
   };
 
+  // 외부에서 메시지 업데이트 (id 이용)
+  const updateMessage = (id, newText, newType = "bot") => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === id ? { ...msg, text: newText, type: newType } : msg
+      )
+    );
+  };
+
   useEffect(() => {
     if (typeof onReady === "function") {
-      onReady(addMessage);
+      onReady({
+        addMessage,
+        updateMessage,
+        sendMessage: (text, tempText) => sendCodeMessage(text, tempText),
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onReady]);
 
   // 페이지 로드 시 채팅 이력 불러오기

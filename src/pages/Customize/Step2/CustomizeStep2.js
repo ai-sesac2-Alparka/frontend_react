@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../../../components/Header/Header";
+// import Header from "../../../components/Header/Header";
 import "./CustomizeStep2.css";
 
 // 옵션 데이터 (컴포넌트 밖으로 이동하여 안정성 확보)
@@ -97,9 +97,9 @@ const CustomizeStep2 = () => {
       }
     });
 
-  console.log("최종 프롬프트:", finalPrompt);
-  // 먼저 생성 중 화면으로 이동시킨 후 GameGenerating에서 스튜디오로 이동하도록 함
-  navigate("/game/generating", { state: { finalPrompt } });
+    console.log("최종 프롬프트:", finalPrompt);
+    // 먼저 생성 중 화면으로 이동시킨 후 GameGenerating에서 스튜디오로 이동하도록 함
+    navigate("/game/generating", { state: { finalPrompt } });
   };
 
   const handleBack = () => {
@@ -108,13 +108,12 @@ const CustomizeStep2 = () => {
 
   return (
     <div className="customize-step2">
-      <Header />
-      
+      {/* <Header /> */}
+
       <div className="step2-container">
         {/* --- 왼쪽 패널: 최종 주문서 --- */}
         <div className="left-panel">
           <div className="order-card">
-            
             {/* 뒤로가기 버튼 */}
             <div className="back-btn-wrapper" onClick={handleBack}>
               <div className="polygon" />
@@ -125,8 +124,10 @@ const CustomizeStep2 = () => {
             <div className="order-display-area">
               <p className="order-text">{pText}</p>
             </div>
-            
-            <p className="warning-text">텍스트 수정은 이전 단계에서만 가능해요!</p>
+
+            <p className="warning-text">
+              텍스트 수정은 이전 단계에서만 가능해요!
+            </p>
 
             {/* 생성 버튼 */}
             <div className="create-btn" onClick={handleCreate}>
@@ -139,7 +140,7 @@ const CustomizeStep2 = () => {
         <div className="right-panel">
           <div className="options-card">
             <h2 className="panel-title-right">재미 요소 추가</h2>
-            
+
             <div className="options-list">
               {optionsData.map((opt) => (
                 <div
@@ -148,7 +149,7 @@ const CustomizeStep2 = () => {
                   onClick={() => toggleOption(opt.key)}
                 >
                   <div className="option-bg" />
-                  
+
                   <div className="option-content">
                     <div className="option-icon-box">
                       <span className="option-icon">{opt.icon}</span>
@@ -158,12 +159,15 @@ const CustomizeStep2 = () => {
                       <div className="option-desc">{opt.desc}</div>
                     </div>
                     {/* 선택 여부 체크 */}
-                    <div className={`option-check ${selectedOptions[opt.key] ? "selected" : ""}`} />
+                    <div
+                      className={`option-check ${
+                        selectedOptions[opt.key] ? "selected" : ""
+                      }`}
+                    />
                   </div>
                 </div>
               ))}
             </div>
-
           </div>
         </div>
       </div>

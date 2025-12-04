@@ -29,20 +29,24 @@ import Arcade from "./pages/Arcade/Arcade";
 import SignUp from "./pages/SignUp/SignUp"; // ✅ 회원가입 추가
 import Login from "./pages/Login/Login"; // ✅ 로그인 추가
 
+// 헤더를 포함하는 레이아웃 컴포넌트
+// (온보딩 페이지를 제외한 모든 페이지에서 헤더가 보입니다)
+const MainLayout = ({ isLoggedIn, onLogout }) => {
+  return (
+    <>
+      <Header isLoggedIn={isLoggedIn} onLogout={onLogout} />
+      <Outlet /> {/* 여기에 각 페이지의 내용이 들어갑니다 */}
+    </>
+  );
+};
+
 function App() {
   // 👇 현재는 "로그인 안 된 상태(false)"로 설정했습니다.
   // 나중에 로그인이 되면 이 값을 true로 바꾸게 됩니다.
-  const [isLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 헤더를 포함하는 레이아웃 컴포넌트
-  // (온보딩 페이지를 제외한 모든 페이지에서 헤더가 보입니다)
-  const MainLayout = () => {
-    return (
-      <>
-        <Header isLoggedIn={isLoggedIn} />
-        <Outlet /> {/* 여기에 각 페이지의 내용이 들어갑니다 */}
-      </>
-    );
+  const handleLogout = () => {
+    setIsLoggedIn(false);
   };
 
   return (
@@ -53,13 +57,20 @@ function App() {
           <Route path="/" element={<Onboarding />} />
 
           {/* 2. 헤더가 필요한 페이지들 (MainLayout으로 감쌈) */}
-          <Route element={<MainLayout />}>
+          <Route
+            element={
+              <MainLayout isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+            }
+          >
             {/* 메인 및 아케이드 */}
             <Route path="/home" element={<HomeCreation />} />
             <Route path="/arcade" element={<Arcade />} />
             {/* 인증 관련 (로그인/회원가입) */}
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
+            <Route
+              path="/login"
+              element={<Login setIsLoggedIn={setIsLoggedIn} />}
+            />
             {/* 게임 생성 프로세스 */}
             <Route path="/customize/step1" element={<CustomizeStep1 />} />
             <Route path="/customize/step2" element={<CustomizeStep2 />} />

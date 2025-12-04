@@ -251,9 +251,23 @@ const MyPage = ({ isLoggedIn }) => {
                     onClick={() => navigate(`/play/${game.id}`)}
                   >
                     <div className="card-thumbnail">
-                      {/* 실제 이미지 대신 플레이스홀더 사용 */}
-                      <div className="thumbnail-placeholder">
-                        {game.type === "created" ? "🎮" : "👾"}
+                      {game.thumbnail ? (
+                        <img
+                          src={game.thumbnail}
+                          alt={game.game_title}
+                          className="game-thumbnail-img"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      {/* 실제 이미지 대신 플레이스홀더 사용 (이미지가 없거나 로드 실패 시) */}
+                      <div
+                        className="thumbnail-placeholder"
+                        style={{ display: game.thumbnail ? "none" : "flex" }}
+                      >
+                        {activeTab === "created" ? "🎮" : "👾"}
                       </div>
                     </div>
                     <div className="card-info">

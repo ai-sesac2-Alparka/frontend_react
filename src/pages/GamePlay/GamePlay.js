@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Header from "../../components/Header/Header";
+// import Header from "../../components/Header/Header";
 import { getGameMetadata } from "../../api/backend";
 import "./GamePlay.css";
 
@@ -159,7 +159,7 @@ const GamePlay = () => {
 
   return (
     <div className="game-play-page">
-      <Header />
+      {/* <Header /> */}
 
       <div className="play-container">
         {/* --- 1. 게임 화면 영역 --- */}

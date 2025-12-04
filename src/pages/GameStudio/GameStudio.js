@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Header from "../../components/Header/Header";
+// import Header from "../../components/Header/Header";
 import SnapshotTree from "../../components/SnapshotTree/SnapshotTree";
 import DataEditor from "../../components/DataEditor/DataEditor";
 import AssetManager from "../../components/AssetManager/AssetManager";
@@ -12,7 +12,7 @@ import { useGame } from "../../contexts/GameContext";
 import { useSnapshotTree } from "../../hooks/useSnapshotTree";
 import { useGameData } from "../../hooks/useGameData";
 import { useAssets } from "../../hooks/useAssets";
-import { changeGameTitle, getGameTitle } from "../../api/backend";
+import { changeGameTitle, getGameTitle, modifyAsset } from "../../api/backend";
 import "./GameStudio.css";
 
 // 이미지 에셋 (필요시 경로 수정)
@@ -66,6 +66,8 @@ const GameStudio = () => {
   // Chat messages are handled inside ChatPanel component now.
   const [isMuted, setIsMuted] = useState(false);
   const chatAddMessageRef = useRef(null);
+  const chatSendMessageRef = useRef(null);
+  const chatUpdateMessageRef = useRef(null);
   const [gameErrorBatch, setGameErrorBatch] = useState(null);
   const [reloadToken, setReloadToken] = useState(0); // 게임 iframe 리로드용
   const [isEditingTitle, setIsEditingTitle] = useState(false); // 타이틀 수정 모드
@@ -124,8 +126,15 @@ const GameStudio = () => {
     setDisplayTitle,
   ]);
 
-  const handleChatReady = (addMessageFn) => {
-    chatAddMessageRef.current = addMessageFn;
+  const handleChatReady = (methods) => {
+    if (methods && typeof methods === "object") {
+      chatAddMessageRef.current = methods.addMessage;
+      chatSendMessageRef.current = methods.sendMessage;
+      chatUpdateMessageRef.current = methods.updateMessage;
+    } else if (typeof methods === "function") {
+      // 하위 호환성
+      chatAddMessageRef.current = methods;
+    }
   };
 
   // 타이틀 변경 확인 처리
@@ -168,21 +177,56 @@ const GameStudio = () => {
     );
   }
 
-  const handlePromptSubmit = (promptText, asset) => {
-    // 포맷된 메시지를 채팅에 추가
-    const userMsg = {
-      type: "user",
-      text: `에셋 '${asset?.name ?? ""}'에 대한 요청: ${promptText}`,
-    };
-    if (chatAddMessageRef.current) chatAddMessageRef.current(userMsg);
-    // AI 시뮬레이션 응답
-    setTimeout(() => {
-      if (chatAddMessageRef.current)
-        chatAddMessageRef.current({
-          type: "ai",
-          text: `에셋 '${asset?.name ?? ""}' 처리 완료 (샘플 응답)`,
-        });
-    }, 800);
+  const handlePromptSubmit = async (promptText, asset) => {
+    const messageText = `에셋 '${
+      asset?.name ?? ""
+    }'에 대한 요청: ${promptText}`;
+
+    // 1. 사용자 메시지 추가
+    if (chatAddMessageRef.current) {
+      chatAddMessageRef.current({
+        type: "user",
+        text: messageText,
+      });
+    }
+
+    // 2. 봇 "처리 중" 메시지 추가
+    const tempBotMsgId = Date.now();
+    if (chatAddMessageRef.current) {
+      chatAddMessageRef.current({
+        id: tempBotMsgId,
+        type: "bot",
+        text: "에셋 수정 요청을 처리 중입니다...",
+      });
+    }
+
+    try {
+      // 3. API 호출
+      const response = await modifyAsset(gameName, asset.name, promptText);
+      const reply = response.data.reply || "에셋 수정이 완료되었습니다.";
+
+      // 4. 성공 처리: 메시지 업데이트
+      if (chatUpdateMessageRef.current) {
+        chatUpdateMessageRef.current(tempBotMsgId, reply, "bot");
+      }
+
+      // 5. 데이터 갱신
+      await fetchAssets();
+      setAssetStamp(Date.now());
+      await fetchSnapshots();
+      await fetchGameData();
+      handleGameReload();
+    } catch (error) {
+      console.error("에셋 수정 실패:", error);
+      // 실패 처리: 메시지 업데이트
+      if (chatUpdateMessageRef.current) {
+        chatUpdateMessageRef.current(
+          tempBotMsgId,
+          "에셋 수정 중 오류가 발생했습니다.",
+          "bot"
+        );
+      }
+    }
   };
 
   const handleErrorBatch = (batchData) => {
@@ -227,7 +271,7 @@ const GameStudio = () => {
   return (
     <div className="game-studio">
       {/* --- 1. 상단 헤더 (제목, 저장, 업로드) --- */}
-      <Header />
+      {/* <Header /> */}
       <header className="studio-header">
         <div className="header-left">
           <input

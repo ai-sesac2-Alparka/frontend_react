@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header/Header";
+// import Header from "../../components/Header/Header";
 import { getShowcaseGames } from "../../api/arcade";
 import "./HomeCreation.css";
 
@@ -129,7 +129,7 @@ function HomeCreation() {
 
   return (
     <div className="home-creation-page">
-      <Header />
+      {/* Header removed as it is provided by MainLayout */}
 
       <main className="main-content">
         {/* 히어로 섹션 */}

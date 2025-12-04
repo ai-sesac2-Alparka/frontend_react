@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../../../components/Header/Header";
+// import Header from "../../../components/Header/Header";
 import "./CustomizeStep1.css";
 
 export const CustomizeStep1 = () => {
@@ -24,7 +24,7 @@ export const CustomizeStep1 = () => {
 
   return (
     <div className="customize-step1">
-      <Header />
+      {/* <Header /> */}
       <div className="text-wrapper">📝 주문서를 자유롭게 수정해보세요!</div>
       <div className="rectangle">
         <div className="editor-window">
@@ -61,9 +61,7 @@ export const CustomizeStep1 = () => {
                 <button onClick={() => handleQuickAdd("⏳ 타임어택")}>
                   타임어택
                 </button>
-                <button onClick={() => handleQuickAdd("🏆 랭킹")}>
-                  랭킹
-                </button>
+                <button onClick={() => handleQuickAdd("🏆 랭킹")}>랭킹</button>
               </div>
             </div>
 

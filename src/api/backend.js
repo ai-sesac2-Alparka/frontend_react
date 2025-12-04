@@ -83,6 +83,15 @@ export const replaceAsset = (gameName, previewItem, file) => {
   });
 };
 
+// 에셋 수정 요청 (AI)
+export const modifyAsset = (gameName, assetName, prompt) => {
+  return backendApi.post("/modify-asset", {
+    game_name: gameName,
+    asset_name: assetName,
+    prompt: prompt,
+  });
+};
+
 // 게임 데이터 업데이트
 export const updateGameData = (gameName, data) => {
   return backendApi.post(
